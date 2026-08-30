@@ -1,38 +1,42 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpRight,
+  GitBranch,
   Mail,
   Menu,
+  RefreshCw,
+  Search,
   Sparkles,
+  Star,
+  Users,
   X
 } from "lucide-react"
 
-const projects = [
-  {
-    title: "LUMINA AI",
-    description:
-      "An interactive AI music experience using gesture recognition and voice commands.",
-    tags: ["AI", "TensorFlow", "JavaScript"],
-    link: "https://github.com/DwijKansagara"
-  },
-  {
-    title: "J.A.R.V.I.S",
-    description:
-      "A personal AI assistant project exploring voice interaction and intelligent automation.",
-    tags: ["AI", "Python", "Automation"],
-    link: "https://github.com/DwijKansagara"
-  },
-  {
-    title: "Avengers Doomsday",
-    description:
-      "A creative web project focused on interactive design and a cinematic experience.",
-    tags: ["Web", "UI", "Creative"],
-    link: "https://github.com/DwijKansagara"
-  }
-]
+type GitHubUser = {
+  login: string
+  name: string | null
+  bio: string | null
+  avatar_url: string
+  public_repos: number
+  followers: number
+  following: number
+  html_url: string
+}
+
+type GitHubRepo = {
+  id: number
+  name: string
+  description: string | null
+  html_url: string
+  stargazers_count: number
+  forks_count: number
+  language: string | null
+  updated_at: string
+  topics?: string[]
+}
 
 const skills = [
   "Python",
@@ -49,15 +53,114 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dark, setDark] = useState(true)
   const [showTop, setShowTop] = useState(false)
+  const [activeSection, setActiveSection] = useState("home")
+  const [progress, setProgress] = useState(0)
+
+  const [mouse, setMouse] = useState({
+    x: 0,
+    y: 0
+  })
+
+  const [githubUser, setGithubUser] = useState<GitHubUser | null>(null)
+  const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([])
+  const [githubLoading, setGithubLoading] = useState(true)
+  const [githubError, setGithubError] = useState(false)
+
+  const [search, setSearch] = useState("")
+  const [filter, setFilter] = useState("All")
+
+  const [terminalInput, setTerminalInput] = useState("")
+
+  const [terminalLines, setTerminalLines] = useState([
+    "DwijOS v4.0 initialized.",
+    "GitHub API connection ready.",
+    'Type "help" to see available commands.'
+  ])
+
+  const loadGitHub = async () => {
+    setGithubLoading(true)
+    setGithubError(false)
+
+    try {
+      const userResponse = await fetch(
+        "https://api.github.com/users/DwijKansagara"
+      )
+
+      if (!userResponse.ok) {
+        throw new Error("User request failed")
+      }
+
+      const userData: GitHubUser = await userResponse.json()
+
+      const repoResponse = await fetch(
+        "https://api.github.com/users/DwijKansagara/repos?sort=updated&per_page=100"
+      )
+
+      if (!repoResponse.ok) {
+        throw new Error("Repository request failed")
+      }
+
+      const repoData: GitHubRepo[] = await repoResponse.json()
+
+      setGithubUser(userData)
+      setGithubRepos(repoData)
+    } catch {
+      setGithubError(true)
+    } finally {
+      setGithubLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const handleScroll = () => {
-      setShowTop(window.scrollY > 500)
+    loadGitHub()
+  }, [])
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      setMouse({
+        x: event.clientX,
+        y: event.clientY
+      })
     }
 
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight
+
+      setProgress(height > 0 ? (scrollTop / height) * 100 : 0)
+      setShowTop(scrollTop > 500)
+
+      const sections = [
+        "home",
+        "about",
+        "skills",
+        "github",
+        "terminal",
+        "contact"
+      ]
+
+      let current = "home"
+
+      sections.forEach(section => {
+        const element = document.getElementById(section)
+
+        if (element && element.getBoundingClientRect().top <= 180) {
+          current = section
+        }
+      })
+
+      setActiveSection(current)
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("scroll", handleScroll)
 
+    handleScroll()
+
     return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("scroll", handleScroll)
     }
   }, [])
@@ -70,25 +173,199 @@ function App() {
     setMenuOpen(false)
   }
 
+  const languages = useMemo(() => {
+    const values = githubRepos
+      .map(repo => repo.language)
+      .filter((language): language is string => Boolean(language))
+
+    return ["All", ...Array.from(new Set(values))]
+  }, [githubRepos])
+
+  const filteredRepos = useMemo(() => {
+    return githubRepos.filter(repo => {
+      const matchesSearch =
+        repo.name.toLowerCase().includes(search.toLowerCase()) ||
+        (repo.description || "")
+          .toLowerCase()
+          .includes(search.toLowerCase())
+
+      const matchesFilter =
+        filter === "All" || repo.language === filter
+
+      return matchesSearch && matchesFilter
+    })
+  }, [githubRepos, search, filter])
+
+  const totalStars = githubRepos.reduce(
+    (total, repo) => total + repo.stargazers_count,
+    0
+  )
+
+  const runCommand = (command: string) => {
+    const value = command.trim().toLowerCase()
+
+    if (!value) {
+      return
+    }
+
+    if (value === "clear") {
+      setTerminalLines([])
+      setTerminalInput("")
+      return
+    }
+
+    if (value === "help") {
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        "about   → about Dwij",
+        "projects → view GitHub projects",
+        "skills  → view skills",
+        "stats   → GitHub statistics",
+        "github  → open GitHub",
+        "contact → email",
+        "clear   → clear terminal"
+      ])
+
+      setTerminalInput("")
+      return
+    }
+
+    if (value === "github") {
+      window.open(
+        "https://github.com/DwijKansagara",
+        "_blank",
+        "noopener,noreferrer"
+      )
+
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        "Opening GitHub..."
+      ])
+
+      setTerminalInput("")
+      return
+    }
+
+    if (value === "about") {
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        "Dwij is a student, developer and AI enthusiast who loves building interactive projects."
+      ])
+
+      setTerminalInput("")
+      scrollTo("about")
+      return
+    }
+
+    if (value === "projects") {
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        `${githubRepos.length} GitHub repositories loaded.`
+      ])
+
+      setTerminalInput("")
+      scrollTo("github")
+      return
+    }
+
+    if (value === "skills") {
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        skills.join(" • ")
+      ])
+
+      setTerminalInput("")
+      scrollTo("skills")
+      return
+    }
+
+    if (value === "stats") {
+      const stats = githubUser
+        ? `Repos: ${githubUser.public_repos} | Followers: ${githubUser.followers} | Following: ${githubUser.following} | Stars: ${totalStars}`
+        : "GitHub data is still loading."
+
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        stats
+      ])
+
+      setTerminalInput("")
+      scrollTo("github")
+      return
+    }
+
+    if (value === "contact") {
+      setTerminalLines(previous => [
+        ...previous,
+        `> ${command}`,
+        "Email: kansagara.dwij@gmail.com"
+      ])
+
+      setTerminalInput("")
+      scrollTo("contact")
+      return
+    }
+
+    setTerminalLines(previous => [
+      ...previous,
+      `> ${command}`,
+      `Command not found: ${value}`,
+      'Type "help" for available commands.'
+    ])
+
+    setTerminalInput("")
+  }
+
   return (
     <div className={dark ? "app dark" : "app"}>
+      <motion.div
+        className="scroll-progress"
+        style={{
+          width: `${progress}%`
+        }}
+      />
+
+      <div
+        className="cursor-glow"
+        style={{
+          left: mouse.x,
+          top: mouse.y
+        }}
+      />
+
       <div className="background-grid" />
 
       <header className="navbar">
         <button
           className="logo"
           onClick={() => scrollTo("home")}
-          aria-label="Go to home"
         >
           D<span>K</span>
         </button>
 
         <nav className={menuOpen ? "nav-links open" : "nav-links"}>
-          <button onClick={() => scrollTo("home")}>Home</button>
-          <button onClick={() => scrollTo("about")}>About</button>
-          <button onClick={() => scrollTo("projects")}>Projects</button>
-          <button onClick={() => scrollTo("skills")}>Skills</button>
-          <button onClick={() => scrollTo("contact")}>Contact</button>
+          {[
+            ["home", "Home"],
+            ["about", "About"],
+            ["skills", "Skills"],
+            ["github", "Projects"],
+            ["terminal", "Terminal"],
+            ["contact", "Contact"]
+          ].map(([id, label]) => (
+            <button
+              key={id}
+              className={activeSection === id ? "active" : ""}
+              onClick={() => scrollTo(id)}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
 
         <div className="nav-actions">
@@ -103,7 +380,7 @@ function App() {
           <button
             className="menu-button"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
+            aria-label="Open menu"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -114,13 +391,25 @@ function App() {
         <section id="home" className="hero section">
           <motion.div
             className="hero-content"
-            initial={{ opacity: 0, y: 35 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{
+              opacity: 0,
+              y: 40
+            }}
+            animate={{
+              opacity: 1,
+              y: 0
+            }}
+            transition={{
+              duration: 0.8
+            }}
           >
             <div className="status">
               <span />
-              Currently building
+              {githubLoading
+                ? "Connecting to GitHub"
+                : githubError
+                  ? "GitHub connection unavailable"
+                  : "GitHub connected"}
             </div>
 
             <p className="eyebrow">
@@ -145,9 +434,9 @@ function App() {
             <div className="hero-buttons">
               <button
                 className="primary-button"
-                onClick={() => scrollTo("projects")}
+                onClick={() => scrollTo("github")}
               >
-                View my projects
+                Explore my projects
                 <ArrowUpRight size={18} />
               </button>
 
@@ -157,24 +446,40 @@ function App() {
                 target="_blank"
                 rel="noreferrer"
               >
+                <GitBranch size={18} />
                 GitHub
-                <ArrowUpRight size={18} />
               </a>
             </div>
           </motion.div>
 
           <motion.div
             className="hero-orbit"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
+            animate={{
+              y: [-10, 10, -10],
+              rotate: [0, 2, 0, -2, 0]
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
           >
             <div className="orbit orbit-one" />
             <div className="orbit orbit-two" />
 
-            <div className="orbit-core">
+            <motion.div
+              className="orbit-core"
+              animate={{
+                rotate: [0, 360]
+              }}
+              transition={{
+                duration: 16,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
               <span>DK</span>
-            </div>
+            </motion.div>
           </motion.div>
 
           <button
@@ -193,7 +498,20 @@ function App() {
           </div>
 
           <div className="about-grid">
-            <div className="about-main">
+            <motion.div
+              className="about-main"
+              initial={{
+                opacity: 0,
+                x: -40
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0
+              }}
+              viewport={{
+                once: true
+              }}
+            >
               <p className="big-text">
                 I like <span>building things</span> more than just talking
                 about them.
@@ -209,9 +527,25 @@ function App() {
                 I'm constantly exploring new technologies and looking for
                 interesting problems to solve.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="about-card">
+            <motion.div
+              className="about-card"
+              initial={{
+                opacity: 0,
+                x: 40
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0
+              }}
+              viewport={{
+                once: true
+              }}
+              whileHover={{
+                y: -8
+              }}
+            >
               <div className="card-icon">✦</div>
 
               <h3>Currently exploring</h3>
@@ -220,60 +554,13 @@ function App() {
                 AI • Machine Learning • Web Development • Robotics • Creative
                 Coding
               </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="projects" className="section">
-          <div className="section-heading">
-            <p className="section-number">02 / PROJECTS</p>
-            <h2>Things I've built.</h2>
-          </div>
-
-          <div className="projects-grid">
-            {projects.map((project, index) => (
-              <motion.article
-                className="project-card"
-                key={project.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.5,
-                  delay: index * 0.1
-                }}
-              >
-                <div className="project-top">
-                  <span>0{index + 1}</span>
-
-                  <a
-                    href={project.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${project.title}`}
-                  >
-                    <ArrowUpRight size={20} />
-                  </a>
-                </div>
-
-                <div>
-                  <h3>{project.title}</h3>
-                  <p>{project.description}</p>
-                </div>
-
-                <div className="tags">
-                  {project.tags.map(tag => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </motion.article>
-            ))}
+            </motion.div>
           </div>
         </section>
 
         <section id="skills" className="section skills-section">
           <div className="section-heading">
-            <p className="section-number">03 / SKILLS</p>
+            <p className="section-number">02 / SKILLS</p>
             <h2>Tools I enjoy using.</h2>
           </div>
 
@@ -284,21 +571,21 @@ function App() {
                 key={skill}
                 initial={{
                   opacity: 0,
-                  scale: 0.8
+                  scale: 0.7
                 }}
                 whileInView={{
                   opacity: 1,
                   scale: 1
                 }}
+                whileHover={{
+                  y: -8,
+                  scale: 1.08
+                }}
                 viewport={{
                   once: true
                 }}
                 transition={{
-                  delay: index * 0.05
-                }}
-                whileHover={{
-                  y: -7,
-                  scale: 1.04
+                  delay: index * 0.06
                 }}
               >
                 {skill}
@@ -307,9 +594,287 @@ function App() {
           </div>
         </section>
 
+        <section id="github" className="section github-section">
+          <div className="section-heading github-heading">
+            <div>
+              <p className="section-number">03 / PROJECTS</p>
+              <h2>My GitHub universe.</h2>
+            </div>
+
+            <button
+              className="refresh-button"
+              onClick={loadGitHub}
+              disabled={githubLoading}
+            >
+              <RefreshCw
+                size={16}
+                className={githubLoading ? "spin" : ""}
+              />
+              Refresh
+            </button>
+          </div>
+
+          {githubLoading && (
+            <div className="github-loading">
+              <div className="loading-spinner" />
+              <p>Loading repositories from GitHub...</p>
+            </div>
+          )}
+
+          {githubError && !githubLoading && (
+            <div className="github-error">
+              <p>Couldn't load GitHub data.</p>
+
+              <button onClick={loadGitHub}>
+                Try again
+              </button>
+            </div>
+          )}
+
+          {!githubLoading && !githubError && githubUser && (
+            <>
+              <div className="github-profile">
+                <div className="github-profile-main">
+                  <img
+                    src={githubUser.avatar_url}
+                    alt="Dwij GitHub avatar"
+                  />
+
+                  <div>
+                    <h3>
+                      {githubUser.name || githubUser.login}
+                    </h3>
+
+                    <p>@{githubUser.login}</p>
+
+                    <span>
+                      {githubUser.bio ||
+                        "Developer building interesting things."}
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  href={githubUser.html_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="github-profile-button"
+                >
+                  <GitBranch size={17} />
+                  View Profile
+                  <ArrowUpRight size={16} />
+                </a>
+              </div>
+
+              <div className="github-stats">
+                <div className="github-stat">
+                  <GitBranch size={19} />
+                  <strong>{githubUser.public_repos}</strong>
+                  <span>Repositories</span>
+                </div>
+
+                <div className="github-stat">
+                  <Users size={19} />
+                  <strong>{githubUser.followers}</strong>
+                  <span>Followers</span>
+                </div>
+
+                <div className="github-stat">
+                  <Users size={19} />
+                  <strong>{githubUser.following}</strong>
+                  <span>Following</span>
+                </div>
+
+                <div className="github-stat">
+                  <Star size={19} />
+                  <strong>{totalStars}</strong>
+                  <span>Total Stars</span>
+                </div>
+              </div>
+
+              <div className="project-controls">
+                <div className="project-search">
+                  <Search size={18} />
+
+                  <input
+                    value={search}
+                    onChange={event =>
+                      setSearch(event.target.value)
+                    }
+                    placeholder="Search projects..."
+                  />
+                </div>
+
+                <div className="project-filters">
+                  {languages.slice(0, 8).map(language => (
+                    <button
+                      key={language}
+                      className={
+                        filter === language ? "selected" : ""
+                      }
+                      onClick={() => setFilter(language)}
+                    >
+                      {language}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {filteredRepos.length === 0 && (
+                <div className="empty-projects">
+                  <Search size={25} />
+                  <h3>No projects found</h3>
+                  <p>Try another search or filter.</p>
+                </div>
+              )}
+
+              <div className="repo-grid">
+                {filteredRepos.slice(0, 12).map((repo, index) => (
+                  <motion.a
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="repo-card"
+                    key={repo.id}
+                    initial={{
+                      opacity: 0,
+                      y: 25
+                    }}
+                    whileInView={{
+                      opacity: 1,
+                      y: 0
+                    }}
+                    whileHover={{
+                      y: -8,
+                      scale: 1.015
+                    }}
+                    viewport={{
+                      once: true
+                    }}
+                    transition={{
+                      delay: Math.min(index * 0.05, 0.4)
+                    }}
+                  >
+                    <div className="repo-top">
+                      <GitBranch size={19} />
+
+                      <ArrowUpRight size={18} />
+                    </div>
+
+                    <h3>{repo.name}</h3>
+
+                    <p>
+                      {repo.description ||
+                        "A project built by Dwij."}
+                    </p>
+
+                    <div className="repo-bottom">
+                      <span>
+                        {repo.language || "Code"}
+                      </span>
+
+                      <span>
+                        <Star size={13} />
+                        {repo.stargazers_count}
+                      </span>
+
+                      <span>
+                        Forks {repo.forks_count}
+                      </span>
+                    </div>
+                  </motion.a>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section id="terminal" className="section terminal-section">
+          <div className="section-heading">
+            <p className="section-number">04 / TERMINAL</p>
+            <h2>Talk to my portfolio.</h2>
+          </div>
+
+          <motion.div
+            className="terminal-window"
+            initial={{
+              opacity: 0,
+              y: 30
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0
+            }}
+            viewport={{
+              once: true
+            }}
+          >
+            <div className="terminal-header">
+              <div className="terminal-dots">
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <div className="terminal-title">
+                <GitBranch size={15} />
+                dwij@portfolio:v4
+              </div>
+            </div>
+
+            <div className="terminal-body">
+              {terminalLines.map((line, index) => (
+                <div
+                  className={
+                    line.startsWith(">")
+                      ? "terminal-command"
+                      : "terminal-line"
+                  }
+                  key={`${line}-${index}`}
+                >
+                  {line}
+                </div>
+              ))}
+
+              <form
+                className="terminal-input-row"
+                onSubmit={event => {
+                  event.preventDefault()
+                  runCommand(terminalInput)
+                }}
+              >
+                <span>visitor@dwij:~$</span>
+
+                <input
+                  value={terminalInput}
+                  onChange={event =>
+                    setTerminalInput(event.target.value)
+                  }
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="Terminal command"
+                />
+              </form>
+            </div>
+          </motion.div>
+        </section>
+
         <section id="contact" className="section contact-section">
-          <div className="contact-box">
-            <p className="section-number">04 / CONTACT</p>
+          <motion.div
+            className="contact-box"
+            initial={{
+              opacity: 0,
+              scale: 0.95
+            }}
+            whileInView={{
+              opacity: 1,
+              scale: 1
+            }}
+            viewport={{
+              once: true
+            }}
+          >
+            <p className="section-number">05 / CONTACT</p>
 
             <h2>
               Have an idea?
@@ -324,7 +889,7 @@ function App() {
 
             <div className="social-links">
               <a
-                href="mailto:dwijkansagara150911@gmail.com"
+                href="mailto:kansagara.dwij@gmail.com"
                 className="social-link"
               >
                 <Mail size={18} />
@@ -337,12 +902,12 @@ function App() {
                 rel="noreferrer"
                 className="social-link"
               >
+                <GitBranch size={18} />
                 GitHub
-                <ArrowUpRight size={18} />
               </a>
 
               <a
-                href="https://www.instagram.com/"
+                href="https://www.instagram.com/dwij.kansagara/"
                 target="_blank"
                 rel="noreferrer"
                 className="social-link"
@@ -350,16 +915,8 @@ function App() {
                 Instagram
                 <ArrowUpRight size={18} />
               </a>
-
-              <a
-                href="#"
-                className="social-link"
-                onClick={event => event.preventDefault()}
-              >
-                Linkedin
-              </a>
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 
@@ -369,13 +926,21 @@ function App() {
       </footer>
 
       {showTop && (
-        <button
+        <motion.button
           className="back-top"
           onClick={() => scrollTo("home")}
+          initial={{
+            opacity: 0,
+            scale: 0.7
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1
+          }}
           aria-label="Back to top"
         >
           <ArrowUp size={18} />
-        </button>
+        </motion.button>
       )}
     </div>
   )
