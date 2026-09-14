@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { motion, useScroll, useSpring } from "framer-motion"
+import { motion, useScroll, useSpring, useMotionValue } from "framer-motion"
 import { gsap } from "gsap"
 import {
   ArrowDownRight,
@@ -282,6 +282,7 @@ function App() {
       )}
 
       <div className={dark ? "app dark-theme" : "app light-theme"}>
+        <CustomCursor />
         <motion.div
           className="scroll-progress"
           style={{ scaleX }}
@@ -1138,6 +1139,65 @@ function ProjectVisual({
         </span>
       </div>
     </div>
+  )
+}
+
+function CustomCursor() {
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const springConfig = { damping: 25, stiffness: 250, mass: 0.5 }
+  const cursorX = useSpring(mouseX, springConfig)
+  const cursorY = useSpring(mouseY, springConfig)
+
+  const [isHovering, setIsHovering] = useState(false)
+
+  useEffect(() => {
+    const updateMousePosition = (e: MouseEvent) => {
+      mouseX.set(e.clientX - 4)
+      mouseY.set(e.clientY - 4)
+      
+      const target = e.target as HTMLElement
+      const isHoverable = target.closest("a, button, input, textarea, [role='button']")
+      setIsHovering(!!isHoverable)
+    }
+
+    window.addEventListener("mousemove", updateMousePosition)
+    return () => window.removeEventListener("mousemove", updateMousePosition)
+  }, [mouseX, mouseY])
+
+  return (
+    <>
+      <motion.div
+        className="cursor-dot"
+        style={{
+          x: mouseX,
+          y: mouseY,
+        }}
+        animate={{
+          scale: isHovering ? 2.5 : 1,
+          opacity: isHovering ? 0 : 1,
+        }}
+        transition={{ duration: 0.15 }}
+      />
+      <motion.div
+        className="cursor-glow"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: "calc(-50% + 4px)",
+          translateY: "calc(-50% + 4px)",
+        }}
+        animate={{
+          width: isHovering ? 80 : 320,
+          height: isHovering ? 80 : 320,
+          backgroundColor: isHovering ? "rgba(199, 255, 77, 0.4)" : "var(--accent-soft)",
+          opacity: isHovering ? 0.6 : 0.8,
+          border: isHovering ? "1px solid var(--accent)" : "none"
+        }}
+        transition={{ duration: 0.3 }}
+      />
+    </>
   )
 }
 
