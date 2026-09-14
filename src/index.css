@@ -13,6 +13,19 @@ html {
 body {
   font-family: "Inter", sans-serif;
   overflow-x: hidden;
+  cursor: none;
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 button,
@@ -69,19 +82,12 @@ a {
 
 .cursor-glow {
   position: fixed;
-  z-index: 1;
-  width: 320px;
-  height: 320px;
+  z-index: 9998;
+  top: 0;
+  left: 0;
   border-radius: 50%;
   pointer-events: none;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    circle,
-    var(--accent-soft),
-    transparent 68%
-  );
   filter: blur(20px);
-  opacity: 0.8;
 }
 
 .scroll-progress {
@@ -120,7 +126,7 @@ a {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -2px;
-  cursor: pointer;
+  cursor: none;
 }
 
 .logo span {
@@ -139,7 +145,7 @@ a {
   color: var(--muted);
   background: transparent;
   border-radius: 10px;
-  cursor: pointer;
+  cursor: none;
   font-size: 13px;
   transition: 0.25s ease;
 }
@@ -178,7 +184,7 @@ a {
   border-radius: 11px;
   color: var(--text);
   background: transparent;
-  cursor: pointer;
+  cursor: none;
   transition: 0.25s ease;
 }
 
@@ -293,7 +299,7 @@ a {
   min-height: 48px;
   padding: 0 19px;
   border-radius: 12px;
-  cursor: pointer;
+  cursor: none;
   text-decoration: none;
   transition: 0.25s ease;
 }
@@ -375,7 +381,7 @@ a {
   border: 0;
   color: var(--muted);
   background: transparent;
-  cursor: pointer;
+  cursor: none;
   transform: translateX(-50%);
   font-family: "DM Mono", monospace;
   font-size: 10px;
@@ -473,7 +479,7 @@ a {
   border-radius: 14px;
   color: var(--text);
   background: var(--surface);
-  cursor: default;
+  cursor: none;
   font-family: "DM Mono", monospace;
   font-size: 13px;
   transition: 0.25s ease;
@@ -500,12 +506,12 @@ a {
   border-radius: 10px;
   color: var(--text);
   background: var(--surface);
-  cursor: pointer;
+  cursor: none;
 }
 
 .refresh-button:disabled {
   opacity: 0.6;
-  cursor: default;
+  cursor: none;
 }
 
 .spin {
@@ -541,7 +547,7 @@ a {
   border-radius: 9px;
   color: var(--text);
   background: var(--surface);
-  cursor: pointer;
+  cursor: none;
 }
 
 .github-profile {
@@ -672,7 +678,7 @@ a {
   border-radius: 9px;
   color: var(--muted);
   background: transparent;
-  cursor: pointer;
+  cursor: none;
   font-size: 11px;
 }
 
@@ -893,7 +899,7 @@ a {
   color: var(--text);
   background: var(--surface);
   backdrop-filter: blur(15px);
-  cursor: pointer;
+  cursor: none;
 }
 
 footer {
