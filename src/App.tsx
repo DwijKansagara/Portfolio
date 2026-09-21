@@ -139,8 +139,8 @@ function App() {
         const data = await response.json()
 
         setGithubProfile(data)
-      } catch (error) {
-        console.error(error)
+      } catch {
+        console.error("Failed to fetch GitHub profile data.")
       } finally {
         setGithubLoading(false)
       }
