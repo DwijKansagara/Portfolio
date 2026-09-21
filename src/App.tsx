@@ -1142,7 +1142,7 @@ function ProjectVisual({
   )
 }
 
-function CustomCursor() {
+export function CustomCursor() {
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
