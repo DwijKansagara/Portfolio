@@ -566,7 +566,7 @@ function App() {
                       <a
                         href={project.link}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         aria-label={`Open ${project.title} on GitHub`}
                       >
                         <ArrowUpRight size={22} />
@@ -651,7 +651,7 @@ function App() {
                   <a
                     href={githubProfile.html_url}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="github-visit"
                   >
                     VISIT PROFILE
@@ -699,7 +699,7 @@ function App() {
                   <a
                     href="https://github.com/DwijKansagara"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     github.com/DwijKansagara
                     <ArrowUpRight size={15} />
@@ -718,7 +718,7 @@ function App() {
                 <a
                   href="https://github.com/DwijKansagara"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   VISIT GITHUB
                   <ArrowUpRight size={16} />
@@ -879,7 +879,7 @@ function App() {
                   <a
                     href="https://github.com/DwijKansagara"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     aria-label="Visit GitHub"
                   >
                     <span className="social-symbol">
@@ -892,7 +892,7 @@ function App() {
                   <a
                     href="https://www.instagram.com/dwij.kansagara/"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     aria-label="Visit Instagram"
                   >
                     <span className="social-symbol">
