@@ -1054,7 +1054,7 @@ function LoadingScreen({
   )
 }
 
-function ProjectVisual({
+export function ProjectVisual({
   type
 }: {
   type: string
