@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { motion, useScroll, useSpring, useMotionValue } from "framer-motion"
+import { motion, useScroll, useSpring, useMotionValue, useMotionValueEvent } from "framer-motion"
 import { gsap } from "gsap"
 import {
   ArrowDownRight,
@@ -92,7 +92,7 @@ function App() {
 
   const nameRef = useRef<HTMLHeadingElement>(null)
 
-  const { scrollYProgress } = useScroll()
+  const { scrollY, scrollYProgress } = useScroll()
 
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -149,17 +149,9 @@ function App() {
     fetchGithubProfile()
   }, [])
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowTop(window.scrollY > 600)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setShowTop(latest > 600)
+  })
 
   useEffect(() => {
     if (loading) return
