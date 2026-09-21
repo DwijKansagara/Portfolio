@@ -17,7 +17,6 @@ import {
   GitBranch
 } from "lucide-react"
 import "./App.css"
-import LoadingScreen from "./components/LoadingScreen"
 
 const projects = [
   {
@@ -1088,7 +1087,7 @@ function CustomCursor() {
     const updateMousePosition = (e: MouseEvent) => {
       mouseX.set(e.clientX - 4)
       mouseY.set(e.clientY - 4)
-      
+
       const target = e.target as HTMLElement
       const isHoverable = target.closest("a, button, input, textarea, [role='button']")
       setIsHovering(!!isHoverable)
