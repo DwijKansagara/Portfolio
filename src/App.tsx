@@ -985,7 +985,7 @@ function App() {
   )
 }
 
-function LoadingScreen({
+export function LoadingScreen({
   progress
 }: {
   progress: number
