@@ -1153,17 +1153,31 @@ function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false)
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const updateMousePosition = (e: MouseEvent) => {
-      mouseX.set(e.clientX - 4)
-      mouseY.set(e.clientY - 4)
-      
-      const target = e.target as HTMLElement
-      const isHoverable = target.closest("a, button, input, textarea, [role='button']")
-      setIsHovering(!!isHoverable)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+
+      rafId = requestAnimationFrame(() => {
+        mouseX.set(e.clientX - 4)
+        mouseY.set(e.clientY - 4)
+
+        const target = e.target as HTMLElement
+        const isHoverable = target.closest("a, button, input, textarea, [role='button']")
+        setIsHovering(!!isHoverable)
+        rafId = null;
+      });
     }
 
     window.addEventListener("mousemove", updateMousePosition)
-    return () => window.removeEventListener("mousemove", updateMousePosition)
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
   }, [mouseX, mouseY])
 
   return (
