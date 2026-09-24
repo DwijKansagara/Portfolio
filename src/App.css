@@ -1412,6 +1412,9 @@ footer {
     padding: 7rem 2rem;
     position: fixed;
     right: -100%;
+    left: auto;
+    visibility: hidden;
+    pointer-events: none;
     top: 0;
     transition: right 0.35s ease;
     width: min(75vw, 340px);
@@ -1419,6 +1422,8 @@ footer {
 
   .nav-links.active {
     right: 0;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .nav-links button {
