@@ -72,17 +72,21 @@
   gap: 34px;
   padding-left: 110px;
 }
-.navigation a {
+.navigation .nav-menu-button {
   font-size: 14px;
   color: var(--muted);
   transition: color 0.2s;
   position: relative;
+  padding: 9px 0;
+  background: transparent;
 }
-.navigation a:hover,
-.navigation a[aria-current] {
+.navigation .nav-menu-button:hover,
+.navigation .nav-menu-button.is-active,
+.navigation .nav-menu-button[aria-current] {
   color: var(--text);
 }
-.navigation a[aria-current]::after {
+.navigation .nav-menu-button.is-active::after,
+.navigation .nav-menu-button[aria-current]::after {
   content: "";
   position: absolute;
   left: 0;
@@ -90,6 +94,51 @@
   bottom: -12px;
   height: 2px;
   background: var(--accent);
+}
+.nav-mega {
+  position: absolute;
+  z-index: 30;
+  top: 78px;
+  left: 50%;
+  width: min(520px, calc(100vw - 40px));
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+  box-shadow: 0 24px 80px #0006;
+  backdrop-filter: blur(22px);
+  transform: translateX(-50%);
+}
+.nav-mega > .mono {
+  display: block;
+  padding: 6px 10px 12px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.nav-mega > button {
+  width: 100%;
+  display: grid;
+  gap: 7px;
+  padding: 14px 12px;
+  border-radius: 9px;
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+}
+.nav-mega > button:hover,
+.nav-mega > button:focus-visible {
+  background: var(--accent-soft);
+}
+.nav-mega b {
+  font-size: 15px;
+  font-weight: 550;
+}
+.nav-mega small {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
 }
 .nav-actions {
   display: flex;
@@ -304,6 +353,227 @@ h1 em {
   gap: 16px;
   align-items: center;
   color: var(--text);
+}
+.profile-bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 118px;
+  gap: 12px;
+  padding-block: 92px 74px;
+}
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.bento-card:hover,
+.bento-card:focus-within {
+  z-index: 2;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow: 0 18px 55px #0003;
+  transform: translateY(-5px) rotate(-0.4deg);
+}
+.bento-card > .mono {
+  color: var(--muted);
+  font-size: 9px;
+}
+.bento-card strong {
+  font-size: 17px;
+  font-weight: 550;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.bento-card small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.bento-location {
+  grid-column: span 4;
+  grid-row: span 2;
+  background:
+    radial-gradient(circle at 80% 12%, var(--accent-soft), transparent 38%),
+    var(--surface);
+}
+.bento-location > svg {
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.bento-rainbow {
+  grid-column: span 2;
+  grid-row: span 1;
+  align-items: center;
+  text-align: center;
+}
+.bento-emoji {
+  color: var(--accent);
+  font-size: 28px;
+  line-height: 1;
+  animation: mascot-float 3s ease-in-out infinite;
+}
+.bento-pronounce {
+  grid-column: span 3;
+  grid-row: span 1;
+}
+.bento-height {
+  grid-column: span 3;
+  grid-row: span 1;
+}
+.bento-height > svg {
+  color: var(--accent);
+}
+.bento-photo {
+  grid-column: span 5;
+  grid-row: span 3;
+  padding: 0;
+  background: #1b1e1a;
+}
+.bento-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 42%;
+  filter: saturate(0.84) contrast(1.03);
+  transition:
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.35s;
+}
+.bento-photo:hover img {
+  transform: scale(1.045);
+  filter: saturate(1) contrast(1.02);
+}
+.bento-photo-label {
+  position: absolute;
+  left: 17px;
+  bottom: 15px;
+  padding: 8px 10px;
+  border: 1px solid #ffffff2c;
+  border-radius: 5px;
+  color: #f5f6ef !important;
+  background: #11150fbb;
+  backdrop-filter: blur(10px);
+}
+.bento-fact {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+.key-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.key-row button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 6px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 75%, var(--text) 6%);
+  font: 12px var(--mono);
+  box-shadow: 0 7px 14px #0003;
+  transition:
+    transform 0.08s,
+    border-bottom-width 0.08s,
+    color 0.2s,
+    background 0.2s;
+}
+.key-row button:hover {
+  color: var(--accent-dark);
+  background: var(--accent);
+}
+.key-row button:active {
+  transform: translateY(3px) scale(0.97);
+  border-bottom-width: 1px;
+}
+.bento-tech {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+.tech-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.tech-chips span {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+.bento-hobbies {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+.bento-dog {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+.bento-dog > svg {
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.bento-mascot {
+  grid-column: span 5;
+  grid-row: span 2;
+  min-height: 236px;
+  padding-left: 48%;
+}
+.dwij-mascot {
+  position: absolute;
+  left: 10px;
+  bottom: -4px;
+  width: 47%;
+  height: auto;
+  color: var(--text);
+  overflow: visible;
+  filter: drop-shadow(0 18px 18px #0004);
+}
+.mascot-tail {
+  transform-origin: 171px 122px;
+  animation: mascot-tail 0.7s ease-in-out infinite alternate;
+}
+.mascot-body {
+  transform-origin: 110px 148px;
+}
+.mascot-head {
+  transform-origin: 110px 110px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mascot-paw {
+  transform-origin: 52px 112px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mascot-pupil {
+  transition: transform 0.25s;
+}
+.bento-mascot:hover .mascot-head {
+  transform: rotate(-7deg) translateY(-3px);
+}
+.bento-mascot:hover .mascot-paw {
+  transform: rotate(-30deg);
+}
+.bento-mascot:hover .mascot-pupil {
+  transform: translate(3px, -2px);
+}
+.bento-mascot:hover .mascot-body {
+  animation: mascot-bounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .discipline-strip {
   border-block: 1px solid var(--line);
@@ -1247,9 +1517,54 @@ h2 {
   background: var(--surface-solid) !important;
   font-size: 12px !important;
   padding: 12px 16px !important;
+  left: 104px !important;
 }
 .assistant-launcher > span {
   font-size: 9px !important;
+}
+.mascot-dock {
+  position: fixed;
+  left: 18px;
+  bottom: 12px;
+  z-index: 81;
+  width: 78px;
+  height: 88px;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+}
+.mascot-dock .dwij-mascot {
+  position: static;
+  width: 74px;
+  height: auto;
+  filter: drop-shadow(0 9px 8px #0007);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mascot-dock > span {
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: var(--text);
+  background: var(--surface-solid);
+  font: 8px var(--mono);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.mascot-dock:hover .dwij-mascot,
+.mascot-dock:focus-visible .dwij-mascot {
+  transform: translateY(-7px) rotate(-3deg);
+}
+.mascot-dock:hover > span,
+.mascot-dock:focus-visible > span {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 .command-dialog {
   width: min(480px, calc(100vw - 32px));
@@ -1321,6 +1636,21 @@ h2 {
 @keyframes orbit {
   to {
     transform: rotate(360deg);
+  }
+}
+@keyframes mascot-tail {
+  to {
+    transform: rotate(15deg);
+  }
+}
+@keyframes mascot-float {
+  50% {
+    transform: translateY(-5px) rotate(8deg);
+  }
+}
+@keyframes mascot-bounce {
+  50% {
+    transform: scaleY(0.94) translateY(5px);
   }
 }
 @media (min-width: 1600px) {
@@ -1435,10 +1765,16 @@ h2 {
     align-items: stretch;
     gap: 0;
   }
-  .navigation a {
+  .navigation .nav-menu-button {
     padding: 15px;
+    text-align: left;
+    width: 100%;
   }
-  .navigation a[aria-current]::after {
+  .navigation .nav-menu-button[aria-current]::after,
+  .navigation .nav-menu-button.is-active::after {
+    display: none;
+  }
+  .nav-mega {
     display: none;
   }
   .hero-topline {
@@ -1513,6 +1849,25 @@ h2 {
   }
   .discipline-strip .wrap > span:nth-last-child(-n + 2) {
     display: none;
+  }
+  .profile-bento {
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 112px;
+    padding-block: 70px 55px;
+  }
+  .bento-location,
+  .bento-rainbow,
+  .bento-pronounce,
+  .bento-height,
+  .bento-fact,
+  .bento-tech,
+  .bento-hobbies,
+  .bento-dog {
+    grid-column: span 3;
+  }
+  .bento-photo,
+  .bento-mascot {
+    grid-column: span 6;
   }
   .section {
     padding-block: 75px;
@@ -1768,6 +2123,61 @@ h2 {
   .discipline-strip .asterisk {
     font-size: 15px;
   }
+  .profile-bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 108px;
+    gap: 9px;
+    padding-block: 52px 45px;
+  }
+  .bento-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .bento-card strong {
+    font-size: 15px;
+  }
+  .bento-card small {
+    font-size: 10px;
+  }
+  .bento-location,
+  .bento-pronounce,
+  .bento-fact,
+  .bento-tech,
+  .bento-hobbies,
+  .bento-dog,
+  .bento-photo,
+  .bento-mascot {
+    grid-column: span 2;
+  }
+  .bento-rainbow,
+  .bento-height {
+    grid-column: span 1;
+  }
+  .bento-photo {
+    grid-row: span 3;
+  }
+  .bento-location,
+  .bento-fact,
+  .bento-tech,
+  .bento-hobbies,
+  .bento-dog,
+  .bento-mascot {
+    grid-row: span 2;
+  }
+  .bento-mascot {
+    padding-left: 48%;
+  }
+  .dwij-mascot {
+    width: 49%;
+    left: 2px;
+  }
+  .key-row {
+    margin-bottom: 7px;
+  }
+  .key-row button {
+    width: 34px;
+    height: 34px;
+  }
   .section {
     padding-block: 65px;
   }
@@ -1974,6 +2384,15 @@ h2 {
   }
   .assistant-launcher {
     bottom: 14px !important;
-    left: 14px !important;
+    left: 86px !important;
+    padding: 11px 13px !important;
+  }
+  .mascot-dock {
+    left: 8px;
+    bottom: 8px;
+    width: 72px;
+  }
+  .mascot-dock .dwij-mascot {
+    width: 68px;
   }
 }

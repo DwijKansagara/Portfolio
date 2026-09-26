@@ -25,6 +25,10 @@ import {
   Sparkles,
   Pause,
   Play,
+  MapPin,
+  Mic2,
+  Dog,
+  UserRound,
 } from "lucide-react";
 import { projects, skills } from "./portfolio";
 import {
@@ -40,10 +44,10 @@ import "./App.css";
 export { ProjectVisual } from "./ProjectVisual";
 const email = "kansagara.dwij@gmail.com";
 const nav = [
-  ["projects", "Work"],
+  ["projects", "Categories"],
+  ["skills", "Courses"],
+  ["playground", "Goodies"],
   ["about", "About"],
-  ["skills", "Stack"],
-  ["journey", "Journey"],
 ] as const;
 
 function Reveal({
@@ -66,6 +70,137 @@ function Reveal({
   );
 }
 
+function DwijMascot() {
+  return (
+    <svg
+      className="dwij-mascot"
+      viewBox="0 0 220 190"
+      role="img"
+      aria-label="Pixel, Dwij's curious robot dog mascot"
+    >
+      <g className="mascot-tail">
+        <path
+          d="M171 122c31-13 39-33 25-47"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="round"
+        />
+        <circle cx="197" cy="74" r="8" fill="var(--accent)" />
+      </g>
+      <g className="mascot-body">
+        <rect
+          x="63"
+          y="87"
+          width="109"
+          height="72"
+          rx="32"
+          fill="var(--surface-solid)"
+          stroke="currentColor"
+          strokeWidth="5"
+        />
+        <rect
+          x="70"
+          y="151"
+          width="28"
+          height="30"
+          rx="12"
+          fill="var(--surface-solid)"
+          stroke="currentColor"
+          strokeWidth="5"
+        />
+        <rect
+          x="137"
+          y="151"
+          width="28"
+          height="30"
+          rx="12"
+          fill="var(--surface-solid)"
+          stroke="currentColor"
+          strokeWidth="5"
+        />
+        <path d="M105 112h29l-4 27h-21z" fill="var(--accent)" />
+        <circle cx="119" cy="123" r="5" fill="var(--accent-dark)" />
+      </g>
+      <g className="mascot-head">
+        <path
+          d="M61 39 43 13c-5-7-15-3-14 6l5 52"
+          fill="var(--accent)"
+          stroke="currentColor"
+          strokeWidth="5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m152 38 16-25c5-8 16-4 15 5l-4 55"
+          fill="var(--surface-solid)"
+          stroke="currentColor"
+          strokeWidth="5"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="39"
+          y="33"
+          width="139"
+          height="91"
+          rx="43"
+          fill="var(--surface-solid)"
+          stroke="currentColor"
+          strokeWidth="5"
+        />
+        <circle className="mascot-eye" cx="81" cy="72" r="15" fill="#fff" />
+        <circle className="mascot-eye" cx="138" cy="72" r="15" fill="#fff" />
+        <circle className="mascot-pupil" cx="85" cy="75" r="6" fill="#10120f" />
+        <circle
+          className="mascot-pupil"
+          cx="142"
+          cy="75"
+          r="6"
+          fill="#10120f"
+        />
+        <path d="M101 93h18l-9 9z" fill="var(--accent)" />
+        <path
+          d="M110 102c-2 11-13 13-21 7m21-7c2 11 13 13 21 7"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <path
+          className="mascot-antenna"
+          d="M108 34V15"
+          stroke="currentColor"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        <circle
+          className="mascot-antenna"
+          cx="108"
+          cy="10"
+          r="8"
+          fill="var(--accent)"
+        />
+      </g>
+      <g className="mascot-paw">
+        <path
+          d="M51 112c-25 1-32-22-18-37"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="13"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="31"
+          cy="74"
+          r="9"
+          fill="var(--accent)"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+      </g>
+    </svg>
+  );
+}
+
 function App() {
   const [light, setLight] = useState(() => {
     try {
@@ -75,6 +210,7 @@ function App() {
     }
   });
   const [menu, setMenu] = useState(false);
+  const [openNav, setOpenNav] = useState<string | null>(null);
   const [active, setActive] = useState("home");
   const [paused, setPaused] = useState(false);
   const [filter, setFilter] = useState("All work");
@@ -94,6 +230,7 @@ function App() {
   const [time, setTime] = useState("");
   const palette = useRef<HTMLDialogElement>(null);
   const terminalBody = useRef<HTMLDivElement>(null);
+  const audioContext = useRef<AudioContext | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -129,7 +266,10 @@ function App() {
         if (palette.current?.open) palette.current.close();
         else palette.current?.showModal();
       }
-      if (event.key === "Escape") setMenu(false);
+      if (event.key === "Escape") {
+        setMenu(false);
+        setOpenNav(null);
+      }
     };
     document.addEventListener("keydown", onKey);
     const observer = new IntersectionObserver(
@@ -147,6 +287,7 @@ function App() {
       document.removeEventListener("keydown", onKey);
       observer.disconnect();
       clearTimeout(copyTimer.current);
+      void audioContext.current?.close();
     };
   }, []);
   useEffect(() => {
@@ -179,6 +320,7 @@ function App() {
       .getElementById(id)
       ?.scrollIntoView({ behavior: reduced ? "instant" : "smooth" });
     setMenu(false);
+    setOpenNav(null);
     palette.current?.close();
   }
   async function copyEmail() {
@@ -224,6 +366,31 @@ function App() {
       },
     ]);
   }
+  function playKeySound(index: number) {
+    const AudioContextClass = window.AudioContext;
+    const context = audioContext.current ?? new AudioContextClass();
+    audioContext.current = context;
+    if (context.state === "suspended") void context.resume();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const frequencies = [261.63, 329.63, 392, 523.25];
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(
+      frequencies[index],
+      context.currentTime,
+    );
+    oscillator.frequency.exponentialRampToValueAtTime(
+      frequencies[index] * 0.92,
+      context.currentTime + 0.12,
+    );
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.13, context.currentTime + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.18);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.2);
+  }
   const visibleProjects = projects.filter(
     (project) =>
       filter === "All work" ||
@@ -252,16 +419,111 @@ function App() {
             aria-label="Main navigation"
           >
             {nav.map(([id, label]) => (
-              <a
+              <button
                 key={id}
-                href={`#${id}`}
-                onClick={() => setMenu(false)}
+                type="button"
+                className={
+                  openNav === id
+                    ? "nav-menu-button is-active"
+                    : "nav-menu-button"
+                }
+                onClick={() => {
+                  setOpenNav(openNav === id ? null : id);
+                  if (window.innerWidth <= 800) go(id);
+                }}
                 aria-current={active === id ? "location" : undefined}
               >
                 {label}
-              </a>
+              </button>
             ))}
           </nav>
+          {openNav && (
+            <motion.div
+              className="nav-mega"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              role="dialog"
+              aria-label={`${nav.find(([id]) => id === openNav)?.[1] ?? "Menu"} menu`}
+            >
+              {openNav === "projects" && (
+                <>
+                  <span className="mono">BROWSE THE WORK</span>
+                  <button onClick={() => go("projects")}>
+                    <b>AI & interaction</b>
+                    <small>
+                      Voice, gesture, and intelligent systems{" "}
+                      <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                  <button onClick={() => go("projects")}>
+                    <b>Creative web</b>
+                    <small>
+                      Cinematic interfaces and experiments{" "}
+                      <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                </>
+              )}
+              {openNav === "skills" && (
+                <>
+                  <span className="mono">LEARNING IN PUBLIC</span>
+                  <button onClick={() => go("skills")}>
+                    <b>Frontend & interaction</b>
+                    <small>
+                      React, TypeScript, UI / UX <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                  <button onClick={() => go("skills")}>
+                    <b>AI & experimentation</b>
+                    <small>
+                      Python, TensorFlow, curious prototypes{" "}
+                      <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                </>
+              )}
+              {openNav === "playground" && (
+                <>
+                  <span className="mono">SMALL DELIGHTS</span>
+                  <button onClick={() => go("playground")}>
+                    <b>Interactive terminal</b>
+                    <small>
+                      Ask the portfolio a question <Terminal size={14} />
+                    </small>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPaused(!paused);
+                      setOpenNav(null);
+                    }}
+                  >
+                    <b>{paused ? "Play" : "Pause"} ambient motion</b>
+                    <small>
+                      Motion respects your preference <Pause size={14} />
+                    </small>
+                  </button>
+                </>
+              )}
+              {openNav === "about" && (
+                <>
+                  <span className="mono">A LITTLE CONTEXT</span>
+                  <button onClick={() => go("about")}>
+                    <b>Dwij Kansagara</b>
+                    <small>
+                      Rajkot, Gujarat · He/Him <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                  <button onClick={() => go("contact")}>
+                    <b>Start a conversation</b>
+                    <small>
+                      Have an idea? Let’s make it tangible{" "}
+                      <ArrowUpRight size={14} />
+                    </small>
+                  </button>
+                </>
+              )}
+            </motion.div>
+          )}
           <div className="nav-actions">
             <button
               className="command-trigger"
@@ -362,6 +624,89 @@ function App() {
                 SCROLL TO DISCOVER <ArrowDown size={15} />
               </a>
               <span>SELECTED EXPLORATIONS / 2026</span>
+            </div>
+          </section>
+          <section
+            id="profile-grid"
+            className="profile-bento wrap"
+            aria-label="More about Dwij"
+          >
+            <div className="bento-card bento-location">
+              <MapPin size={17} />
+              <span className="mono">CURRENTLY IN</span>
+              <strong>Rajkot, Gujarat</strong>
+              <small>India · GMT+5:30</small>
+            </div>
+            <div className="bento-card bento-rainbow">
+              <span className="bento-emoji">✳</span>
+              <strong>He / Him</strong>
+              <small>Straight · curious by default.</small>
+            </div>
+            <div className="bento-card bento-pronounce">
+              <span className="mono">HELLO, I’M</span>
+              <strong>Dwij Kansagara</strong>
+              <small>
+                <Mic2 size={13} /> Say “Dwij” like “Dweej”
+              </small>
+            </div>
+            <div className="bento-card bento-height">
+              <UserRound size={18} />
+              <strong>6 ft 0.5 in</strong>
+              <small>Still growing in code.</small>
+            </div>
+            <div className="bento-card bento-photo">
+              <img
+                src="/dwij-portrait.jpeg"
+                alt="Dwij Kansagara wearing glasses"
+              />
+              <span className="bento-photo-label mono">
+                A HUMAN, IN THE LOOP
+              </span>
+            </div>
+            <div className="bento-card bento-fact">
+              <div className="key-row" aria-label="Playable Q W E R sound keys">
+                {["Q", "W", "E", "R"].map((key, index) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onPointerDown={() => playKeySound(index)}
+                    aria-label={`Play ${key} note`}
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+              <strong>Build. Break. Learn. Repeat.</strong>
+              <small>Tap the keys. Each one has a voice.</small>
+            </div>
+            <div className="bento-card bento-tech">
+              <span className="mono">FAVORITE TOOLS</span>
+              <div className="tech-chips">
+                <span>React</span>
+                <span>Python</span>
+                <span>TypeScript</span>
+                <span>TensorFlow</span>
+                <span>GitHub</span>
+              </div>
+            </div>
+            <div className="bento-card bento-hobbies">
+              <span className="mono">OFF THE SCREEN</span>
+              <strong>
+                Building tiny experiments, exploring AI, music, and robotics.
+              </strong>
+              <small>There is always another rabbit hole.</small>
+            </div>
+            <div className="bento-card bento-dog">
+              <Dog size={21} />
+              <span className="mono">FUN FACT</span>
+              <strong>Dog person. No dog. Street dogs still scary.</strong>
+              <small>It’s complicated.</small>
+            </div>
+            <div className="bento-card bento-mascot">
+              <DwijMascot />
+              <span className="mono">MEET PIXEL</span>
+              <strong>A tiny curious companion.</strong>
+              <small>Hover or tap for a wave.</small>
             </div>
           </section>
           <div className="discipline-strip" aria-label="Areas of interest">
@@ -893,6 +1238,15 @@ function App() {
             Back to top <ArrowUpRight size={17} />
           </button>
         </footer>
+        <button
+          className="mascot-dock"
+          type="button"
+          onClick={() => go("profile-grid")}
+          aria-label="Meet Pixel, Dwij's mascot"
+        >
+          <DwijMascot />
+          <span>Meet Pixel</span>
+        </button>
         <PortfolioAssistant />
         <dialog
           className="command-dialog"
@@ -917,7 +1271,6 @@ function App() {
           </div>
           {[
             ...nav,
-            ["playground", "Interactive terminal"],
             ["github", "GitHub activity"],
             ["contact", "Get in touch"],
           ].map(([id, label], index) => (
