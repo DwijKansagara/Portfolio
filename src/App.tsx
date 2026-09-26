@@ -34,11 +34,6 @@ import {
   LocateFixed,
 } from "lucide-react";
 import { projects, skills } from "./portfolio";
-import {
-  fetchGitHubActivity,
-  formatUpdatedDate,
-  type GitHubActivity,
-} from "./liveActivity";
 import PortfolioAssistant from "./PortfolioAssistant";
 import { ProjectVisual } from "./ProjectVisual";
 import ParticleSculpture from "./ParticleSculpture";
@@ -63,10 +58,10 @@ function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.01, margin: "120px 0px" }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
@@ -265,8 +260,6 @@ function App() {
   const [copyError, setCopyError] = useState(false);
   const [command, setCommand] = useState("");
   const [formStatus, setFormStatus] = useState("");
-  const [activity, setActivity] = useState<GitHubActivity | null>(null);
-  const [githubStatus, setGithubStatus] = useState("Connecting to GitHub…");
   const [history, setHistory] = useState([
     {
       command: "hello",
@@ -352,27 +345,6 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    const controller = new AbortController();
-    const refresh = () =>
-      fetchGitHubActivity(controller.signal)
-        .then((result) => {
-          setActivity(result);
-          setGithubStatus("Live from GitHub");
-        })
-        .catch(() => {
-          if (!controller.signal.aborted)
-            setGithubStatus(
-              "Live activity unavailable. Explore the repositories on GitHub.",
-            );
-        });
-    void refresh();
-    const timer = setInterval(() => void refresh(), 600000);
-    return () => {
-      controller.abort();
-      clearInterval(timer);
-    };
-  }, []);
-  useEffect(() => {
     terminalBody.current?.scrollTo({ top: terminalBody.current.scrollHeight });
   }, [history]);
 
@@ -406,9 +378,9 @@ function App() {
     const responses: Record<string, string> = {
       help: "Available commands: about · projects · skills · contact · theme · clear",
       about:
-        "Dwij Kansagara — student, developer, and curious builder from India. Exploring AI, creative code, and robotics.",
+        "Dwij Kansagara is a student developer in Rajkot, India. He builds web interfaces, local AI tools, and robotics projects.",
       projects: projects
-        .map((p) => p.title + " — " + p.description)
+        .map((p) => p.title + ": " + p.description)
         .join("\n\n"),
       skills: skills.join(" / "),
       contact: email + "\ngithub.com/DwijKansagara",
@@ -499,7 +471,7 @@ function App() {
         />
         <header className="navbar wrap">
           <a className="brand" href="#home" aria-label="Dwij Kansagara home">
-            dwij<span>✳</span>
+            dwij<span aria-hidden="true">.</span>
           </a>
           <nav
             id="navigation"
@@ -657,41 +629,41 @@ function App() {
             <div className="hero-layout">
               <div className="hero-copy">
                 <p className="eyebrow">
-                  DWIJ KANSAGARA — DEVELOPER & AI ENTHUSIAST
+                  DWIJ KANSAGARA / STUDENT DEVELOPER / RAJKOT, INDIA
                 </p>
                 <motion.h1
                   initial={{ opacity: 0, y: 25 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
                 >
-                  Curiosity,
+                  Web interfaces,
                   <br />
-                  made
+                  local AI tools,
                   <br />
-                  <em>tangible.</em>
+                  <em>and robotics.</em>
                   <span className="headline-dot">*</span>
                 </motion.h1>
                 <p className="hero-description">
-                  I turn “what if” into something you can interact with.
-                  <br className="desktop-break" /> Exploring the space between
-                  code, AI, and imagination.
+                  Selected React, Python, TensorFlow, voice-interface, and
+                  physical-computing projects. Each project links to its source
+                  repository.
                 </p>
                 <div className="hero-buttons">
                   <a className="button primary" href="#projects">
-                    Explore my work <ArrowDown size={17} />
+                    View projects <ArrowDown size={17} />
                   </a>
                   <a className="text-link" href="#about">
-                    A little about me <ArrowUpRight size={17} />
+                    About Dwij <ArrowUpRight size={17} />
                   </a>
                 </div>
               </div>
               <div className="sculpture">
                 <span className="sculpture-corner mono">
-                  FIG. 001 / AN IDEA TAKING SHAPE
+                  FIG. 001 / CANVAS PARTICLE STUDY
                 </span>
                 <ParticleSculpture paused={paused} light={light} />
                 <div className="sculpture-caption">
-                  <span className="mono">CODE, WITH A LITTLE CURIOSITY.</span>
+                  <span className="mono">INTERACTIVE CANVAS. MOTION CAN BE PAUSED.</span>
                   <button
                     className="icon-button"
                     onClick={() => setPaused(!paused)}
@@ -707,11 +679,11 @@ function App() {
               </div>
             </div>
             <div className="hero-footer mono">
-              <span>STUDENT BY DAY. BUILDER BY NATURE.</span>
+              <span>STUDENT DEVELOPER IN RAJKOT, INDIA.</span>
               <a href="#projects">
-                SCROLL TO DISCOVER <ArrowDown size={15} />
+                VIEW SELECTED PROJECTS <ArrowDown size={15} />
               </a>
-              <span>SELECTED EXPLORATIONS / 2026</span>
+              <span>REACT / PYTHON / AI / ROBOTICS</span>
             </div>
           </section>
           <div className="profile-world">
@@ -747,7 +719,7 @@ function App() {
               </button>
             </div>
             <div className="bento-card bento-rainbow">
-              <span className="bento-emoji">✳</span>
+              <span className="bento-emoji" aria-hidden="true">*</span>
               <strong>He / Him</strong>
               <small>Straight · curious by default.</small>
             </div>
@@ -783,7 +755,7 @@ function App() {
                 ))}
               </div>
               <strong>Build. Break. Learn. Repeat.</strong>
-              <small>Tap or press D–W–I–J. Your name has a voice.</small>
+              <small>Tap or press D / W / I / J. Your name has a voice.</small>
               <button
                 type="button"
                 className="sound-toggle"
@@ -827,11 +799,11 @@ function App() {
             <div className="discipline-strip" aria-label="Areas of interest">
               <div className="wrap">
                 <span>CREATIVE DEVELOPMENT</span>
-                <span className="asterisk">✳</span>
+                <span className="asterisk" aria-hidden="true">*</span>
                 <span>ARTIFICIAL INTELLIGENCE</span>
-                <span className="asterisk">✳</span>
+                <span className="asterisk" aria-hidden="true">*</span>
                 <span>HUMAN INTERACTION</span>
-                <span className="asterisk">✳</span>
+                <span className="asterisk" aria-hidden="true">*</span>
                 <span>ENDLESS CURIOSITY</span>
               </div>
             </div>
@@ -844,14 +816,13 @@ function App() {
               </div>
               <div className="section-heading">
                 <h2>
-                  A few things
+                  Selected projects
                   <br />
-                  I’ve <span className="serif">brought to life.</span>
+                  with <span className="serif">source code.</span>
                 </h2>
                 <p>
-                  Different questions. Different mediums.
-                  <br />
-                  The same drive to make something interesting.
+                  Three repositories covering music interaction, voice tools,
+                  and interface design.
                 </p>
               </div>
             </Reveal>
@@ -950,12 +921,12 @@ function App() {
             <div className="wrap about-grid">
               <Reveal>
                 <span className="mono section-label">
-                  02 / THE PERSON BEHIND THE PIXELS
+                  02 / ABOUT
                 </span>
                 <h2>
-                  Less “what if.”
+                  About
                   <br />
-                  More <span className="serif">“let’s try.”</span>
+                  <span className="serif">Dwij Kansagara.</span>
                 </h2>
                 <div className="about-signature">
                   dwij<span>↗</span>
@@ -963,19 +934,19 @@ function App() {
               </Reveal>
               <Reveal className="about-copy">
                 <p className="large-copy">
-                  Hi, I’m Dwij. A student, developer, and a firm believer that
-                  the best way to understand something is to build it.
+                  I’m Dwij, a student developer based in Rajkot, Gujarat. I
+                  learn software by building working projects and publishing
+                  their source code.
                 </p>
                 <p>
-                  I’m drawn to technology that makes you feel something: an
-                  interface that responds to a gesture, an assistant that
-                  understands your voice, a small idea that becomes a whole new
-                  experience.
+                  My current work covers React interfaces, Python automation,
+                  voice interaction, TensorFlow experiments, and entry-level
+                  robotics.
                 </p>
                 <p>
-                  I learn by experimenting, breaking things, and making them
-                  better. Right now, that means exploring AI, interactive web
-                  experiences, and the possibilities of robotics.
+                  This portfolio describes projects I can support with public
+                  repositories. It does not claim employment, client results,
+                  certifications, or commercial metrics.
                 </p>
                 <div className="about-values mono">
                   <span>
@@ -996,14 +967,13 @@ function App() {
               </div>
               <div className="section-heading">
                 <h2>
-                  Tools change.
+                  Tools I use
                   <br />
-                  <span className="serif">The mindset stays.</span>
+                  <span className="serif">for current projects.</span>
                 </h2>
                 <p>
-                  The languages and tools I reach for
-                  <br />
-                  to take an idea from sketch to screen.
+                  Technologies shown here also appear in the linked project
+                  repositories.
                 </p>
               </div>
             </Reveal>
@@ -1052,14 +1022,13 @@ function App() {
                 04 / A LITTLE INTERACTION
               </span>
               <h2>
-                Go ahead.
+                Portfolio terminal
                 <br />
-                <span className="serif">Poke around.</span>
+                <span className="serif">Try a local command.</span>
               </h2>
               <p>
-                For the curious ones who’d rather explore
-                <br />
-                with a keyboard. Make yourself at home.
+                Commands run in this page. They are not sent to a server and
+                cannot execute system code.
               </p>
               <div className="terminal-shortcuts">
                 {["about", "projects", "skills", "help"].map((cmd) => (
@@ -1127,16 +1096,13 @@ function App() {
               <Reveal>
                 <span className="section-label mono">05 / NEVER FINISHED</span>
                 <h2>
-                  One question.
+                  How I am
                   <br />
-                  One experiment.
-                  <br />
-                  <span className="serif">One step further.</span>
+                  <span className="serif">learning software.</span>
                 </h2>
                 <p className="journey-intro">
-                  No overnight origin story. Just a growing collection of things
-                  I’ve tried, things I’ve learned, and things I want to figure
-                  out.
+                  A short record of the skills represented by the projects on
+                  this page.
                 </p>
               </Reveal>
               <div className="timeline">
@@ -1186,54 +1152,41 @@ function App() {
               </a>
             </div>
             <div className="github-status mono">
-              {activity && <i className="status-dot" />}
-              {githubStatus}
-              {activity && (
-                <span>
-                  {" "}
-                  / {activity.profile.public_repos} PUBLIC REPOSITORIES
-                </span>
-              )}
+              STATIC PROJECT LINKS. NO AUTOMATIC GITHUB TRACKING REQUEST.
             </div>
-            {activity && (
-              <div className="repo-grid">
-                {activity.repositories.slice(0, 3).map((repo) => (
-                  <a
-                    className="repo-card"
-                    key={repo.id}
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <div>
-                      <Github size={19} />
-                      <ArrowUpRight size={17} />
-                    </div>
-                    <h4>{repo.name}</h4>
-                    <p>
-                      {repo.description ||
-                        "An ongoing exploration in code. Dive into the repository."}
-                    </p>
-                    <span className="mono">
-                      {repo.language || "SOURCE"}{" "}
-                      <span>UPDATED {formatUpdatedDate(repo.updated_at)}</span>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            )}
+            <div className="repo-grid">
+              {projects.map((project) => (
+                <a
+                  className="repo-card"
+                  key={project.title}
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div>
+                    <Github size={19} />
+                    <ArrowUpRight size={17} />
+                  </div>
+                  <h4>{project.title}</h4>
+                  <p>{project.description}</p>
+                  <span className="mono">
+                    SOURCE REPOSITORY <span>{project.tags.join(" / ")}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
           </section>
           <section id="contact" className="contact-section wrap">
             <Reveal>
               <div className="section-label mono">
-                <span>06 / YOUR IDEA COULD BE NEXT</span>
-                <span>LET’S MAKE SOMETHING INTERESTING</span>
+                <span>06 / CONTACT</span>
+                <span>EMAIL DWIJ KANSAGARA</span>
               </div>
               <div className="contact-heading">
                 <h2>
-                  Good things start
+                  Contact
                   <br />
-                  with <span className="serif">a conversation.</span>
+                  <span className="serif">Dwij Kansagara.</span>
                 </h2>
                 <a
                   className="contact-arrow"
@@ -1246,9 +1199,8 @@ function App() {
               <div className="contact-bottom">
                 <div>
                   <p>
-                    A project, a question, or just a hello.
-                    <br />
-                    I’d love to hear what’s on your mind.
+                    Use email for project questions, portfolio feedback, or a
+                    privacy request.
                   </p>
                   <div className="email-row">
                     <a href={`mailto:${email}`}>{email}</a>
@@ -1311,7 +1263,7 @@ function App() {
                     />
                   </label>
                   <label>
-                    Your email
+                    Your email address
                     <input
                       name="email"
                       type="email"
@@ -1321,7 +1273,7 @@ function App() {
                     />
                   </label>
                   <label className="full-width">
-                    What are you thinking?
+                    Message
                     <textarea
                       name="message"
                       required
@@ -1329,8 +1281,16 @@ function App() {
                       rows={4}
                     />
                   </label>
+                  <label className="consent-row full-width">
+                    <input name="privacy-consent" type="checkbox" required />
+                    <span>
+                      I understand that sending the email will share my name,
+                      email address, and message with Dwij so he can reply, as
+                      described in the <a href="/privacy/">Privacy Policy</a>.
+                    </span>
+                  </label>
                   <button className="button primary" type="submit">
-                    Open email draft <ArrowUpRight size={17} />
+                    Review email draft <ArrowUpRight size={17} />
                   </button>
                   <p role="status">
                     {formStatus ||
@@ -1343,13 +1303,19 @@ function App() {
         </main>
         <footer className="footer wrap">
           <a className="brand" href="#home">
-            dwij<span>✳</span>
+            dwij<span aria-hidden="true">*</span>
           </a>
           <p className="mono">
             © {new Date().getFullYear()} DWIJ KANSAGARA
             <br />
-            <span>BUILT WITH INTENTION. AND A LOT OF CURIOSITY.</span>
+            <span>INDIVIDUAL PORTFOLIO OPERATOR / RAJKOT, GUJARAT, INDIA</span>
           </p>
+          <nav className="legal-links" aria-label="Legal information">
+            <a href="/privacy/">Privacy</a>
+            <a href="/terms/">Terms</a>
+            <a href="/cookies/">Cookies</a>
+            <a href="/refunds/">Refunds</a>
+          </nav>
           <button className="text-link" onClick={() => go("home")}>
             Back to top <ArrowUpRight size={17} />
           </button>

@@ -60,7 +60,7 @@ export function ProjectVisual({ type }: { type: string }) {
         <div className="portal portal-three" />
 
         <div className="avengers-symbol">
-          <span>A</span>
+          <span>C</span>
         </div>
 
         <div className="particle particle-one" />

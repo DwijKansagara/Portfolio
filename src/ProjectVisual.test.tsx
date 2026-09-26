@@ -45,7 +45,7 @@ describe('ProjectVisual', () => {
 
     // Check if specific text content is present
     expect(screen.getByText('CREATIVE WEB EXPERIENCE')).toBeInTheDocument()
-    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.getByText('C')).toBeInTheDocument()
 
     // Ensure other classes are NOT present
     expect(container.querySelector('.lumina-art')).not.toBeInTheDocument()

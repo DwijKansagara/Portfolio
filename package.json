@@ -11,7 +11,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@mlc-ai/web-llm": "^0.2.85",
     "framer-motion": "^13.1.1",
     "gsap": "^3.15.0",

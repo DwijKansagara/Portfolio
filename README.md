@@ -1,6 +1,6 @@
-# Dwij Kansagara — Curious by design
+# Dwij Kansagara: developer portfolio
 
-A complete React 19 + TypeScript portfolio, built with Vite and Framer Motion. The redesign preserves Dwij's real projects, repository links, email, Instagram, live GitHub integration, and optional on-device AI assistant.
+A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
 
 ## Run
 
@@ -16,7 +16,7 @@ npm run build
 npm run preview
 ```
 
-Deploy the generated `dist/` directory to a static host. The existing Antideploy application configuration, GitHub workflows, canonical URL, and verification file remain intact. No deployment is performed by the redesign itself. The current `base: '/'` expects deployment at the domain root; use the appropriate Vite base for a subpath deployment.
+Deploy the generated `dist/` directory to a static host only after a custom domain and its production canonical URL are configured. The current `base: '/'` expects deployment at the domain root.
 
 ## Visual direction
 
@@ -30,7 +30,7 @@ The creative concept is **curiosity made tangible**: a quiet editorial canvas in
 | Secondary text | `#a2a69a` | `#5c6654` |
 | Accent         | `#d3f36b` | `#456522` |
 
-DM Sans provides the editorial structure, Instrument Serif supplies expressive italic headlines, and DM Mono labels the technical details. Fonts load from Google Fonts with system fallbacks and swap behavior. CSS variables in `src/index.css` own the visual system; `src/App.css` defines component layouts and responsive treatments.
+System sans-serif fonts provide the interface structure, Georgia supplies editorial headlines, and the system monospace stack labels technical details. The page makes no font request to a third party. CSS variables in `src/index.css` own the visual system; `src/App.css` defines component layouts and responsive treatments.
 
 ## Page architecture
 
@@ -40,7 +40,7 @@ DM Sans provides the editorial structure, Instrument Serif supplies expressive i
 4. Skills grouped by purpose: interface, intelligence, and connected systems.
 5. Interactive terminal with real portfolio answers and theme control.
 6. A learning timeline without fabricated employers, dates, or metrics.
-7. Live public GitHub repositories with a readable failure state.
+7. Static project links to the public source repositories, with no automatic GitHub API request.
 8. Contact, clipboard action, email-draft composer, and verified existing social links.
 
 ## Motion and interaction
@@ -52,18 +52,18 @@ Operating-system reduced-motion preferences disable moving transforms and stop a
 - **Ctrl/Cmd + K:** native modal command menu. Tab navigates; Enter selects; Escape closes.
 - **Terminal:** `help`, `about`, `projects`, `skills`, `contact`, `theme`, `clear`, `hello`, `whoami`. Input is interpreted locally, never executed as code. History is bounded and stays in memory.
 - **Project filters:** update the visible cards and accessible pressed states.
-- **Contact:** copies the real email or opens a prefilled mail draft. No message is silently submitted; visitors must send it in their email client. Form contents are retained.
+- **Contact:** copies the real email or opens a prefilled mail draft after required form consent. Nothing is submitted by the website or stored by the application.
 - **AI assistant:** existing opt-in WebLLM implementation retained. See `AI-ASSISTANT.md` for supported hardware, download sizes, and privacy behavior.
 
 ## Content and implementation map
 
 - `src/portfolio.ts`: project descriptions, source URLs, and skills.
 - `src/assistantKnowledge.ts`: grounded assistant answers and context.
-- `src/App.tsx`: page composition, navigation, terminal, filters, contact, and GitHub UI.
+- `src/App.tsx`: page composition, navigation, terminal, filters, contact, and repository links.
 - `src/ParticleSculpture.tsx`: procedural, responsive hero sculpture.
 - `src/ProjectVisual.tsx`: project-specific art components.
-- `src/liveActivity.ts`: GitHub API fetch and formatting.
 - `src/PortfolioAssistant.tsx`: existing optional local AI experience.
+- `public/privacy`, `public/terms`, `public/cookies`, and `public/refunds`: legal and data-use disclosures.
 
 The main page uses the existing Vite/React architecture instead of introducing an unnecessary server. WebLLM remains dynamically imported only after explicit enablement; its large optional runtime is separate from the main page bundle. No API key or paid service is required.
 
@@ -79,8 +79,8 @@ Browser QA covers desktop and mobile rendering, filters, terminal commands, comm
 
 ## Research references
 
-- https://brittanychiang.com/ — clear project and experience hierarchy.
-- https://www.joshwcomeau.com/ — playful, purposeful interaction and motion.
-- https://linear.app/ — restrained product presentation and surface hierarchy.
-- https://motion.dev/docs/react-accessibility — reduced-motion implementation.
-- https://vite.dev/guide/static-deploy.html — production static-build workflow.
+- https://brittanychiang.com/: clear project and experience hierarchy.
+- https://www.joshwcomeau.com/: playful, purposeful interaction and motion.
+- https://linear.app/: restrained product presentation and surface hierarchy.
+- https://motion.dev/docs/react-accessibility: reduced-motion implementation.
+- https://vite.dev/guide/static-deploy.html: production static-build workflow.

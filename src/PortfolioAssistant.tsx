@@ -124,7 +124,7 @@ export default function PortfolioAssistant() {
 
   return <>
     <button ref={launcher} className="assistant-launcher" onClick={() => dialog.current?.showModal()} aria-haspopup="dialog">
-      <MessageCircle size={20} aria-hidden="true" /> Ask about Dwij <span>AI</span>
+      <MessageCircle size={20} aria-hidden="true" /> Ask about Dwij
     </button>
     <dialog ref={dialog} className="assistant-dialog" aria-labelledby="assistant-title" onCancel={event => { event.preventDefault(); close() }}>
       <div className="assistant-header">
@@ -133,14 +133,14 @@ export default function PortfolioAssistant() {
       </div>
       <div className="assistant-body">
         <section className="assistant-intro" aria-label="Local AI setup">
-          <div className="assistant-mode"><Sparkles size={16} aria-hidden="true" /> {mode === 'ready' ? 'Local AI is ready' : 'Free AI. On your device.'}</div>
+          <div className="assistant-mode"><Sparkles size={16} aria-hidden="true" /> {mode === 'ready' ? 'On-device assistant ready' : 'Optional on-device assistant'}</div>
           <p>Explore projects, skills, and ways to get in touch. Quick answers work instantly.</p>
-          {mode !== 'ready' && <p className="assistant-note">Optional AI downloads about 300 MB on first use, then uses your device’s graphics processor. Questions stay in this browser. Downloads come from Hugging Face and GitHub; normal data charges may apply.</p>}
+          {mode !== 'ready' && <p className="assistant-note">Nothing downloads until you choose to enable it. Enabling connects to Hugging Face and GitHub to download about 300 MB, then questions are processed in this browser. Normal data charges may apply. See the Privacy Policy for details.</p>}
           {mode === 'loading' ? <div className="assistant-loading" role="status">
             <label htmlFor="assistant-progress">Preparing local AI · {progress}%</label>
             <progress id="assistant-progress" value={progress} max="100" />
             <button onClick={stop}>Cancel download</button>
-          </div> : mode !== 'ready' ? <button className="assistant-enable" onClick={() => void enableAI()}>Enable local AI <ArrowUpRight size={16} /></button>
+          </div> : mode !== 'ready' ? <button className="assistant-enable" onClick={() => void enableAI()}>Download and enable assistant <ArrowUpRight size={16} /></button>
             : <button className="assistant-text-button" onClick={stop}>Turn off AI & free device memory</button>}
         </section>
         {error && <p className="assistant-error" role="alert">{error}</p>}
@@ -158,7 +158,7 @@ export default function PortfolioAssistant() {
       </div>
       <form className="assistant-form" onSubmit={event => { event.preventDefault(); void send() }}>
         <label className="assistant-sr-only" htmlFor="assistant-question">Ask a question about Dwij</label>
-        <input id="assistant-question" ref={input} value={draft} onChange={event => setDraft(event.target.value)} maxLength={500} disabled={mode !== 'ready' || busy} placeholder={mode === 'ready' ? 'Ask a specific question about Dwij…' : 'Enable local AI to ask your own question'} autoComplete="off" />
+        <input id="assistant-question" ref={input} value={draft} onChange={event => setDraft(event.target.value)} maxLength={500} disabled={mode !== 'ready' || busy} placeholder={mode === 'ready' ? 'Ask a specific question about Dwij…' : 'Enable the assistant to ask a question'} autoComplete="off" />
         {busy ? <button type="button" className="assistant-icon" onClick={stop} aria-label="Stop generating"><X size={19} /></button>
           : <button type="submit" className="assistant-icon" disabled={mode !== 'ready' || !draft.trim()} aria-label="Send question"><Send size={19} /></button>}
       </form>

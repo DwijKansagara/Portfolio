@@ -1,6 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;450;500;550;600;650;700;750;800&family=Instrument+Serif:ital@0;1&display=swap");
 :root {
-  font-family: "DM Sans", sans-serif;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #eeefe7;
   background: #10120f;
   font-synthesis: none;
@@ -16,8 +15,8 @@
   --accent: #d3f36b;
   --accent-dark: #1a2410;
   --accent-soft: #d3f36b13;
-  --serif: "Instrument Serif", Georgia, serif;
-  --mono: "DM Mono", monospace;
+  --serif: Georgia, "Times New Roman", serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   color-scheme: dark;
 }
 :root[data-theme="light"] {

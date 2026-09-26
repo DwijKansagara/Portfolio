@@ -480,7 +480,7 @@ h1 em {
   margin-top: 10px;
   padding: 8px 12px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--text);
   background: var(--accent-soft);
   font-size: 13px;
@@ -599,7 +599,7 @@ h1 em {
   margin-top: 2px;
   padding: 6px 10px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--muted);
   background: transparent;
   font: 11px var(--mono);
@@ -752,7 +752,7 @@ h2 {
   padding: 9px 15px;
   background: transparent;
   border: 1px solid var(--line);
-  border-radius: 30px;
+  border-radius: 6px;
   color: var(--muted);
   font-size: 12px;
 }
@@ -907,15 +907,15 @@ h2 {
 }
 .lumina-art {
   background:
-    radial-gradient(ellipse at 48% 85%, #524182, transparent 60%),
-    linear-gradient(130deg, #17172b, #282640 60%, #181b2b);
+    radial-gradient(ellipse at 48% 85%, #304521, transparent 60%),
+    linear-gradient(130deg, #111712, #1c2819 60%, #101912);
 }
 .art-glow {
   position: absolute;
   width: 240px;
   height: 240px;
   border-radius: 50%;
-  background: #bdadff26;
+  background: #d3f36b20;
   filter: blur(65px);
 }
 .music-orb {
@@ -924,23 +924,23 @@ h2 {
   height: 190px;
   display: grid;
   place-items: center;
-  border: 1px solid #dfd4ff4d;
+  border: 1px solid #d3f36b55;
   border-radius: 50%;
   background: radial-gradient(
     circle at 35% 25%,
-    #c7b5eb,
-    #78689f 27%,
-    #42365d 57%,
-    #b0a4d0 83%,
-    #231d32
+    #e7f7ad,
+    #91aa49 27%,
+    #40542b 57%,
+    #9cb75c 83%,
+    #1b2416
   );
   box-shadow:
-    inset 10px 5px 40px #f1e7ff33,
-    15px 25px 65px #08041280;
+    inset 10px 5px 40px #f4ffd633,
+    15px 25px 65px #05080580;
   transform: rotate(-20deg);
 }
 .music-orb > span {
-  color: #f1eaff;
+  color: #f8ffe2;
   text-shadow: 0 2px 20px #fff6;
   font-size: 60px;
 }
@@ -948,10 +948,10 @@ h2 {
   position: absolute;
   width: 290px;
   height: 115px;
-  border: 1px solid #dfd4ff80;
+  border: 1px solid #d3f36b80;
   border-radius: 50%;
   transform: rotate(-18deg);
-  box-shadow: 0 0 12px #b9a6ff1a;
+  box-shadow: 0 0 12px #d3f36b1a;
 }
 .ring-b {
   width: 335px;
@@ -979,7 +979,7 @@ h2 {
   width: 3px;
   border-radius: 2px;
   height: 18px;
-  background: #cdb8ff88;
+  background: #d3f36b88;
   animation: equalize 1.9s ease-in-out infinite alternate;
 }
 .equalizer span:nth-child(3n) {
@@ -1630,6 +1630,28 @@ h2 {
 .contact-compose .full-width {
   grid-column: 1/-1;
 }
+.contact-compose .consent-row {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 11px;
+  max-width: 76ch;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.contact-compose .consent-row input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+.consent-row a,
+.legal-links a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .contact-compose form > p {
   font-size: 12px;
   color: var(--muted);
@@ -1655,6 +1677,13 @@ h2 {
   font-size: 30px;
 }
 .footer .text-link {
+  font-size: 12px;
+}
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--muted);
   font-size: 12px;
 }
 .assistant-launcher {

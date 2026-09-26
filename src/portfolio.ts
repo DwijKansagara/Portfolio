@@ -2,10 +2,10 @@ export const projects = [
   {
     number: "01",
     title: "LUMINA AI",
-    category: "AI • INTERACTION • MUSIC",
+    category: "WEB • AUDIO • INTERACTION",
     description:
-      "An interactive AI music experience exploring gesture recognition, voice commands and creative interaction.",
-    tags: ["AI", "TensorFlow", "JavaScript"],
+      "A browser-based music interaction prototype using JavaScript, audio and bundled model assets.",
+    tags: ["JavaScript", "Audio", "Prototype"],
     link: "https://github.com/DwijKansagara/LUMINA-AI",
     visual: "lumina"
   },
@@ -14,18 +14,18 @@ export const projects = [
     title: "J.A.R.V.I.S.",
     category: "AI • PYTHON • AUTOMATION",
     description:
-      "A personal AI assistant project exploring voice interaction, intelligent automation and futuristic interfaces.",
-    tags: ["Python", "AI", "Automation"],
+      "A voice and desktop assistant adapted from MARK XXXIX-OR by FatihMakes, with attribution and licence notes preserved in the repository.",
+    tags: ["Python", "Voice", "Automation"],
     link: "https://github.com/DwijKansagara/JARVIS",
     visual: "jarvis"
   },
   {
     number: "03",
-    title: "AVENGERS DOOMSDAY",
-    category: "WEB • UI • CREATIVE",
+    title: "CINEMATIC FAN INTERFACE",
+    category: "WEB • UI • INTERFACE STUDY",
     description:
-      "A cinematic and interactive web project inspired by the Avengers universe and immersive digital experiences.",
-    tags: ["Web", "UI", "Creative"],
+      "An independent interface study exploring cinematic title treatments and motion. It is not affiliated with or endorsed by any film studio.",
+    tags: ["Web", "UI", "Motion"],
     link: "https://github.com/DwijKansagara/avengers-doomsday",
     visual: "avengers"
   }
