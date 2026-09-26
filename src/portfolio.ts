@@ -16,7 +16,7 @@ export const projects = [
     description:
       "A personal AI assistant project exploring voice interaction, intelligent automation and futuristic interfaces.",
     tags: ["Python", "AI", "Automation"],
-    link: "https://github.com/DwijKansagara/J.A.R.V.I.S",
+    link: "https://github.com/DwijKansagara/JARVIS",
     visual: "jarvis"
   },
   {
