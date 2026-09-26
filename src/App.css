@@ -354,12 +354,61 @@ h1 em {
   align-items: center;
   color: var(--text);
 }
+.profile-world {
+  position: relative;
+  margin-top: 58px;
+  padding-top: 46px;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 18% 10%, var(--accent-soft), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 88%, var(--bg)), var(--bg));
+  border-block: 1px solid var(--line);
+}
+.profile-world::before {
+  content: "";
+  position: absolute;
+  inset: -47px 0 auto;
+  height: 48px;
+  background: color-mix(in srgb, var(--surface-solid) 88%, var(--bg));
+  clip-path: polygon(0 100%, 0 62%, 8% 28%, 18% 67%, 30% 18%, 45% 65%, 60% 23%, 74% 68%, 88% 20%, 100% 58%, 100% 100%);
+}
+.profile-bento.wrap {
+  width: min(1040px, calc(100% - 112px));
+}
 .profile-bento {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: 118px;
-  gap: 12px;
-  padding-block: 92px 74px;
+  grid-auto-rows: 132px;
+  gap: 14px;
+  padding-block: 58px 70px;
+}
+.bento-intro {
+  grid-column: 1 / -1;
+  grid-row: span 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  align-items: end;
+  gap: 48px;
+  padding: 0 4px 30px;
+}
+.bento-intro > .mono {
+  grid-column: 1 / -1;
+  color: var(--accent);
+  font-size: 11px;
+  margin-bottom: -24px;
+}
+.bento-intro h2 {
+  font-size: clamp(44px, 5vw, 68px);
+  line-height: 1.02;
+}
+.bento-intro h2 .serif {
+  color: var(--accent);
+}
+.bento-intro p {
+  max-width: 38ch;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
 }
 .bento-card {
   position: relative;
@@ -367,11 +416,16 @@ h1 em {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-solid) 96%, white 2%), var(--surface-solid));
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 8%, transparent) inset,
+    0 2px 5px #0002,
+    0 12px 30px #0001;
   transition:
     transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 0.25s,
@@ -381,17 +435,21 @@ h1 em {
 .bento-card:focus-within {
   z-index: 2;
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  box-shadow: 0 18px 55px #0003;
-  transform: translateY(-5px) rotate(-0.4deg);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 12%, transparent) inset,
+    0 10px 18px #0002,
+    0 28px 70px #0003;
+  transform: translateY(-7px) rotate(-0.35deg) scale(1.01);
 }
 .bento-card > .mono {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
+  line-height: 1.45;
 }
 .bento-card strong {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 550;
-  line-height: 1.25;
+  line-height: 1.3;
   letter-spacing: -0.02em;
 }
 .bento-card small {
@@ -399,8 +457,8 @@ h1 em {
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.55;
 }
 .bento-location {
   grid-column: span 4;
@@ -510,6 +568,26 @@ h1 em {
   transform: translateY(3px) scale(0.97);
   border-bottom-width: 1px;
 }
+.sound-toggle {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  margin-top: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  font: 11px var(--mono);
+  transition: color 0.2s, background 0.2s, transform 0.2s;
+}
+.sound-toggle:hover {
+  color: var(--text);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
 .bento-tech {
   grid-column: span 3;
   grid-row: span 2;
@@ -524,7 +602,7 @@ h1 em {
   border: 1px solid var(--line);
   border-radius: 5px;
   color: var(--muted);
-  font: 10px var(--mono);
+  font: 11px var(--mono);
 }
 .bento-hobbies {
   grid-column: span 4;
@@ -586,8 +664,8 @@ h1 em {
 }
 .discipline-strip {
   border-block: 1px solid var(--line);
-  margin-top: 30px;
-  background: var(--surface);
+  margin-top: 12px;
+  background: color-mix(in srgb, var(--surface-solid) 92%, var(--accent) 8%);
 }
 .discipline-strip .wrap {
   display: flex;
@@ -604,17 +682,17 @@ h1 em {
   font-size: 30px;
 }
 .section {
-  padding-block: 108px;
+  padding-block: 92px;
 }
 .section-label {
   display: flex;
   justify-content: space-between;
   color: var(--muted);
   margin-bottom: 29px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .section-label > span:last-child:not(:first-child) {
-  font-size: 10px;
+  font-size: 11px;
 }
 .section-heading {
   display: flex;
@@ -674,6 +752,19 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px 26px;
+}
+#projects {
+  position: relative;
+  margin-block: 82px;
+  padding-inline: clamp(24px, 3.4vw, 52px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 88% 5%, var(--accent-soft), transparent 24%),
+    color-mix(in srgb, var(--surface-solid) 54%, var(--bg));
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 7%, transparent) inset,
+    0 28px 90px #0002;
 }
 .project-card {
   min-width: 0;
@@ -1005,9 +1096,12 @@ h2 {
   left: 22%;
 }
 .about-section {
-  background: #d3f36b;
+  position: relative;
+  background:
+    radial-gradient(circle at 85% 10%, #efffb5 0 5%, transparent 26%),
+    #cce96c;
   color: #202713;
-  padding: 85px 0;
+  padding: 96px 0;
 }
 .about-grid {
   display: grid;
@@ -1039,14 +1133,15 @@ h2 {
   padding-top: 30px;
 }
 .about-copy > p {
-  font-size: 15px;
-  line-height: 1.8;
-  margin-bottom: 19px;
+  max-width: 62ch;
+  font-size: 17px;
+  line-height: 1.75;
+  margin-bottom: 22px;
   color: #42512b;
 }
 .about-copy .large-copy {
-  font-size: 24px;
-  line-height: 1.5;
+  font-size: 21px;
+  line-height: 1.6;
   letter-spacing: -0.025em;
   color: #202713;
 }
@@ -1069,6 +1164,13 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 7px;
   overflow: hidden;
+}
+#skills {
+  margin-block: 82px;
+  padding-inline: clamp(24px, 3.4vw, 52px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface-solid) 50%, var(--bg));
 }
 .stack-card {
   padding: 30px;
@@ -1114,9 +1216,13 @@ h2 {
   grid-template-columns: 0.9fr 1.1fr;
   align-items: center;
   gap: 70px;
-  border-top: 1px solid var(--line);
-  padding-block: 85px;
-  border-bottom: 1px solid var(--line);
+  margin-block: 82px;
+  padding: 72px clamp(24px, 3.4vw, 52px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 92% 12%, var(--accent-soft), transparent 28%),
+    color-mix(in srgb, var(--surface-solid) 55%, var(--bg));
 }
 .playground-copy > p {
   font-size: 15px;
@@ -1256,6 +1362,13 @@ h2 {
 .timeline {
   padding-left: 20px;
   padding-top: 8px;
+}
+#journey {
+  margin-block: 82px;
+  padding-inline: clamp(24px, 3.4vw, 52px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface-solid) 42%, var(--bg));
 }
 .timeline-step {
   position: relative;
@@ -1526,7 +1639,8 @@ h2 {
   background: var(--surface-solid) !important;
   font-size: 12px !important;
   padding: 12px 16px !important;
-  left: 104px !important;
+  left: auto !important;
+  right: 20px !important;
 }
 .assistant-launcher > span {
   font-size: 9px !important;
@@ -1886,6 +2000,21 @@ h2 {
     grid-auto-rows: 112px;
     padding-block: 70px 55px;
   }
+  .profile-bento.wrap {
+    width: calc(100% - 40px);
+  }
+  .bento-intro {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding-bottom: 24px;
+  }
+  .bento-intro > .mono {
+    margin-bottom: 0;
+  }
+  .bento-intro p {
+    max-width: 52ch;
+    font-size: 16px;
+  }
   .bento-location,
   .bento-rainbow,
   .bento-pronounce,
@@ -1954,10 +2083,10 @@ h2 {
     padding: 65px 0;
   }
   .about-copy .large-copy {
-    font-size: 20px;
+    font-size: 19px;
   }
   .about-copy > p {
-    font-size: 14px;
+    font-size: 16px;
   }
   .about-values {
     flex-wrap: wrap;
@@ -2160,14 +2289,35 @@ h2 {
     gap: 9px;
     padding-block: 52px 45px;
   }
+  .profile-world {
+    margin-top: 42px;
+    padding-top: 24px;
+  }
+  .profile-bento.wrap {
+    width: calc(100% - 24px);
+  }
+  .bento-intro {
+    gap: 16px;
+    padding: 0 4px 18px;
+  }
+  .bento-intro h2 {
+    font-size: clamp(39px, 12vw, 52px);
+  }
+  .bento-intro p {
+    font-size: 16px;
+    line-height: 1.65;
+  }
   .bento-card {
-    padding: 16px;
-    border-radius: 10px;
+    padding: 18px;
+    border-radius: 14px;
   }
   .bento-card strong {
-    font-size: 15px;
+    font-size: 17px;
   }
   .bento-card small {
+    font-size: 14px;
+  }
+  .bento-card > .mono {
     font-size: 10px;
   }
   .bento-location,
@@ -2182,7 +2332,7 @@ h2 {
   }
   .bento-rainbow,
   .bento-height {
-    grid-column: span 1;
+    grid-column: span 2;
   }
   .bento-photo {
     grid-row: span 3;
@@ -2210,10 +2360,10 @@ h2 {
     height: 34px;
   }
   .section {
-    padding-block: 65px;
+    padding-block: 58px;
   }
   .section-label {
-    font-size: 9px;
+    font-size: 10px;
     margin-bottom: 22px;
   }
   .section-heading {
@@ -2308,10 +2458,10 @@ h2 {
     padding-top: 28px;
   }
   .about-copy .large-copy {
-    font-size: 22px;
+    font-size: 19px;
   }
   .about-copy > p {
-    font-size: 15px;
+    font-size: 16px;
   }
   .about-values {
     font-size: 9px;
@@ -2415,15 +2565,18 @@ h2 {
   }
   .assistant-launcher {
     bottom: 14px !important;
-    left: 86px !important;
-    padding: 11px 13px !important;
+    left: auto !important;
+    right: 12px !important;
+    width: 48px;
+    height: 48px;
+    justify-content: center;
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+  .assistant-launcher > span {
+    display: none;
   }
   .mascot-dock {
-    left: 8px;
-    bottom: 8px;
-    width: 72px;
-  }
-  .mascot-dock .dwij-mascot {
-    width: 68px;
+    display: none;
   }
 }

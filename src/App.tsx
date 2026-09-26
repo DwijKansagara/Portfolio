@@ -29,6 +29,8 @@ import {
   Mic2,
   Dog,
   UserRound,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { projects, skills } from "./portfolio";
 import {
@@ -62,7 +64,7 @@ function Reveal({
       className={className}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.12 }}
+      viewport={{ once: true, amount: 0.01, margin: "120px 0px" }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
@@ -255,6 +257,7 @@ function App() {
   const [openNav, setOpenNav] = useState<string | null>(null);
   const [active, setActive] = useState("home");
   const [paused, setPaused] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [filter, setFilter] = useState("All work");
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -273,6 +276,7 @@ function App() {
   const palette = useRef<HTMLDialogElement>(null);
   const terminalBody = useRef<HTMLDivElement>(null);
   const audioContext = useRef<AudioContext | null>(null);
+  const soundEnabledRef = useRef(true);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -288,6 +292,9 @@ function App() {
       /* Theme works without storage. */
     }
   }, [light]);
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
   useEffect(() => {
     const tick = () =>
       setTime(
@@ -311,6 +318,16 @@ function App() {
       if (event.key === "Escape") {
         setMenu(false);
         setOpenNav(null);
+      }
+      const target = event.target as HTMLElement;
+      const soundIndex = ["q", "w", "e", "r", "t"].indexOf(
+        event.key.toLowerCase(),
+      );
+      if (
+        soundIndex >= 0 &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+      ) {
+        playKeySound(soundIndex);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -409,13 +426,14 @@ function App() {
     ]);
   }
   function playKeySound(index: number) {
+    if (!soundEnabledRef.current) return;
     const AudioContextClass = window.AudioContext;
     const context = audioContext.current ?? new AudioContextClass();
     audioContext.current = context;
     if (context.state === "suspended") void context.resume();
     const oscillator = context.createOscillator();
     const gain = context.createGain();
-    const frequencies = [261.63, 329.63, 392, 523.25];
+    const frequencies = [261.63, 329.63, 392, 523.25, 659.25];
     oscillator.type = "triangle";
     oscillator.frequency.setValueAtTime(
       frequencies[index],
@@ -668,11 +686,24 @@ function App() {
               <span>SELECTED EXPLORATIONS / 2026</span>
             </div>
           </section>
-          <section
-            id="profile-grid"
-            className="profile-bento wrap"
-            aria-label="More about Dwij"
-          >
+          <div className="profile-world">
+            <section
+              id="profile-grid"
+              className="profile-bento wrap"
+              aria-labelledby="profile-title"
+            >
+              <div className="bento-intro">
+                <span className="mono">A FEW COORDINATES</span>
+                <h2 id="profile-title">
+                  Hi there! I’m Dwij.
+                  <br />
+                  <span className="serif">Here’s the human bit.</span>
+                </h2>
+                <p>
+                  A student and developer from Rajkot, building playful
+                  experiments across AI, interfaces, sound, and robotics.
+                </p>
+              </div>
             <div className="bento-card bento-location">
               <MapPin size={17} />
               <span className="mono">CURRENTLY IN</span>
@@ -703,12 +734,12 @@ function App() {
               </span>
             </div>
             <div className="bento-card bento-fact">
-              <div className="key-row" aria-label="Playable Q W E R sound keys">
-                {["Q", "W", "E", "R"].map((key, index) => (
+              <div className="key-row" aria-label="Playable Q W E R T sound keys">
+                {["Q", "W", "E", "R", "T"].map((key, index) => (
                   <button
                     key={key}
                     type="button"
-                    onPointerDown={() => playKeySound(index)}
+                    onClick={() => playKeySound(index)}
                     aria-label={`Play ${key} note`}
                   >
                     {key}
@@ -716,7 +747,16 @@ function App() {
                 ))}
               </div>
               <strong>Build. Break. Learn. Repeat.</strong>
-              <small>Tap the keys. Each one has a voice.</small>
+              <small>Tap or press Q–T. Each key has a voice.</small>
+              <button
+                type="button"
+                className="sound-toggle"
+                onClick={() => setSoundEnabled((enabled) => !enabled)}
+                aria-pressed={!soundEnabled}
+              >
+                {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+                Sound {soundEnabled ? "on" : "off"}
+              </button>
             </div>
             <div className="bento-card bento-tech">
               <span className="mono">FAVORITE TOOLS</span>
@@ -747,16 +787,17 @@ function App() {
               <strong>A tiny curious companion.</strong>
               <small>Hover or tap for a wave.</small>
             </div>
-          </section>
-          <div className="discipline-strip" aria-label="Areas of interest">
-            <div className="wrap">
-              <span>CREATIVE DEVELOPMENT</span>
-              <span className="asterisk">✳</span>
-              <span>ARTIFICIAL INTELLIGENCE</span>
-              <span className="asterisk">✳</span>
-              <span>HUMAN INTERACTION</span>
-              <span className="asterisk">✳</span>
-              <span>ENDLESS CURIOSITY</span>
+            </section>
+            <div className="discipline-strip" aria-label="Areas of interest">
+              <div className="wrap">
+                <span>CREATIVE DEVELOPMENT</span>
+                <span className="asterisk">✳</span>
+                <span>ARTIFICIAL INTELLIGENCE</span>
+                <span className="asterisk">✳</span>
+                <span>HUMAN INTERACTION</span>
+                <span className="asterisk">✳</span>
+                <span>ENDLESS CURIOSITY</span>
+              </div>
             </div>
           </div>
           <section id="projects" className="section wrap">
