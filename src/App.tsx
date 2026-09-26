@@ -31,6 +31,7 @@ import {
   UserRound,
   Volume2,
   VolumeX,
+  LocateFixed,
 } from "lucide-react";
 import { projects, skills } from "./portfolio";
 import {
@@ -258,6 +259,7 @@ function App() {
   const [active, setActive] = useState("home");
   const [paused, setPaused] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [distanceStatus, setDistanceStatus] = useState("How far are you from me?");
   const [filter, setFilter] = useState("All work");
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -320,7 +322,7 @@ function App() {
         setOpenNav(null);
       }
       const target = event.target as HTMLElement;
-      const soundIndex = ["q", "w", "e", "r", "t"].indexOf(
+      const soundIndex = ["d", "w", "i", "j"].indexOf(
         event.key.toLowerCase(),
       );
       if (
@@ -433,7 +435,7 @@ function App() {
     if (context.state === "suspended") void context.resume();
     const oscillator = context.createOscillator();
     const gain = context.createGain();
-    const frequencies = [261.63, 329.63, 392, 523.25, 659.25];
+    const frequencies = [293.66, 349.23, 440, 587.33];
     oscillator.type = "triangle";
     oscillator.frequency.setValueAtTime(
       frequencies[index],
@@ -450,6 +452,32 @@ function App() {
     gain.connect(context.destination);
     oscillator.start();
     oscillator.stop(context.currentTime + 0.2);
+  }
+  function calculateDistance() {
+    if (!("geolocation" in navigator)) {
+      setDistanceStatus("Location isn’t available in this browser.");
+      return;
+    }
+    setDistanceStatus("Finding your distance…");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+        const rajkot = { latitude: 22.3, longitude: 70.783333 };
+        const latitudeDelta = toRadians(rajkot.latitude - coords.latitude);
+        const longitudeDelta = toRadians(rajkot.longitude - coords.longitude);
+        const startLatitude = toRadians(coords.latitude);
+        const endLatitude = toRadians(rajkot.latitude);
+        const haversine =
+          Math.sin(latitudeDelta / 2) ** 2 +
+          Math.cos(startLatitude) *
+            Math.cos(endLatitude) *
+            Math.sin(longitudeDelta / 2) ** 2;
+        const distance = 6371 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+        setDistanceStatus(`About ${Math.round(distance).toLocaleString()} km from you`);
+      },
+      () => setDistanceStatus("Share your location to measure the distance."),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
   }
   const visibleProjects = projects.filter(
     (project) =>
@@ -709,6 +737,14 @@ function App() {
               <span className="mono">CURRENTLY IN</span>
               <strong>Rajkot, Gujarat</strong>
               <small>India · GMT+5:30</small>
+              <button
+                type="button"
+                className="distance-button"
+                onClick={calculateDistance}
+              >
+                <LocateFixed size={15} />
+                {distanceStatus}
+              </button>
             </div>
             <div className="bento-card bento-rainbow">
               <span className="bento-emoji">✳</span>
@@ -734,8 +770,8 @@ function App() {
               </span>
             </div>
             <div className="bento-card bento-fact">
-              <div className="key-row" aria-label="Playable Q W E R T sound keys">
-                {["Q", "W", "E", "R", "T"].map((key, index) => (
+              <div className="key-row" aria-label="Playable D W I J sound keys">
+                {["D", "W", "I", "J"].map((key, index) => (
                   <button
                     key={key}
                     type="button"
@@ -747,7 +783,7 @@ function App() {
                 ))}
               </div>
               <strong>Build. Break. Learn. Repeat.</strong>
-              <small>Tap or press Q–T. Each key has a voice.</small>
+              <small>Tap or press D–W–I–J. Your name has a voice.</small>
               <button
                 type="button"
                 className="sound-toggle"
