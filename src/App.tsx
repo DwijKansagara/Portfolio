@@ -1,1253 +1,940 @@
-import { useEffect, useRef, useState } from "react"
-import { motion, useScroll, useSpring, useMotionValue } from "framer-motion"
-import { gsap } from "gsap"
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowDownRight,
+  motion,
+  MotionConfig,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+} from "framer-motion";
+import {
   ArrowUpRight,
-  Mail,
+  ArrowDown,
+  ArrowRight,
+  GitBranch as Github,
+  Camera as Instagram,
+  Command,
   Menu,
-  Moon,
-  Send,
-  Sun,
   X,
-  ExternalLink,
-  Users,
-  BookOpen,
-  UserPlus,
-  GitBranch,
-  RefreshCw,
-  Star
-} from "lucide-react"
-import "./App.css"
-
-import { projects, skills } from "./portfolio"
-import PortfolioAssistant from "./PortfolioAssistant"
+  Sun,
+  Moon,
+  Copy,
+  Check,
+  Terminal,
+  Cpu,
+  Code2,
+  Sparkles,
+  Pause,
+  Play,
+} from "lucide-react";
+import { projects, skills } from "./portfolio";
 import {
   fetchGitHubActivity,
   formatUpdatedDate,
-  type GitHubActivity
-} from "./liveActivity"
+  type GitHubActivity,
+} from "./liveActivity";
+import PortfolioAssistant from "./PortfolioAssistant";
+import { ProjectVisual } from "./ProjectVisual";
+import ParticleSculpture from "./ParticleSculpture";
+import "./App.css";
+
+export { ProjectVisual } from "./ProjectVisual";
+const email = "kansagara.dwij@gmail.com";
+const nav = [
+  ["projects", "Work"],
+  ["about", "About"],
+  ["skills", "Stack"],
+  ["journey", "Journey"],
+] as const;
+
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function App() {
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem("theme") !== "light"
-  })
-
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [showTop, setShowTop] = useState(false)
-  const [formStatus, setFormStatus] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [loadingProgress, setLoadingProgress] = useState(0)
-
-  const [githubActivity, setGithubActivity] =
-    useState<GitHubActivity | null>(null)
-  const [githubLoading, setGithubLoading] = useState(true)
-  const [githubRefreshing, setGithubRefreshing] = useState(false)
-
-  const nameRef = useRef<HTMLHeadingElement>(null)
-
-  const { scrollYProgress } = useScroll()
-
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  })
+  const [light, setLight] = useState(() => {
+    try {
+      return localStorage.getItem("theme") === "light";
+    } catch {
+      return false;
+    }
+  });
+  const [menu, setMenu] = useState(false);
+  const [active, setActive] = useState("home");
+  const [paused, setPaused] = useState(false);
+  const [filter, setFilter] = useState("All work");
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const [command, setCommand] = useState("");
+  const [formStatus, setFormStatus] = useState("");
+  const [activity, setActivity] = useState<GitHubActivity | null>(null);
+  const [githubStatus, setGithubStatus] = useState("Connecting to GitHub…");
+  const [history, setHistory] = useState([
+    {
+      command: "hello",
+      response:
+        "Welcome to my little corner of the internet. Type help to explore.",
+    },
+  ]);
+  const [time, setTime] = useState("");
+  const palette = useRef<HTMLDialogElement>(null);
+  const terminalBody = useRef<HTMLDivElement>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
   useEffect(() => {
-    localStorage.setItem("theme", dark ? "dark" : "light")
-  }, [dark])
-
+    document.documentElement.dataset.theme = light ? "light" : "dark";
+    try {
+      localStorage.setItem("theme", light ? "light" : "dark");
+    } catch {
+      /* Theme works without storage. */
+    }
+  }, [light]);
   useEffect(() => {
-    let progress = 0
-
-    const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 12) + 4
-
-      if (progress >= 100) {
-        progress = 100
-        clearInterval(interval)
-
-        setTimeout(() => {
-          setLoading(false)
-        }, 450)
+    const tick = () =>
+      setTime(
+        new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date()),
+      );
+    tick();
+    const timer = setInterval(tick, 60000);
+    return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (palette.current?.open) palette.current.close();
+        else palette.current?.showModal();
       }
-
-      setLoadingProgress(progress)
-    }, 120)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    const refreshGithub = async (background = false) => {
-      if (background) setGithubRefreshing(true)
-
-      try {
-        const activity = await fetchGitHubActivity(controller.signal)
-        setGithubActivity(activity)
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          console.error("Failed to fetch GitHub activity.")
-        }
-      } finally {
-        setGithubLoading(false)
-        setGithubRefreshing(false)
-      }
-    }
-
-    void refreshGithub()
-    const interval = window.setInterval(
-      () => void refreshGithub(true),
-      10 * 60 * 1000
-    )
-
+      if (event.key === "Escape") setMenu(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: "-15% 0px -55% 0px" },
+    );
+    document
+      .querySelectorAll("main section[id]")
+      .forEach((section) => observer.observe(section));
     return () => {
-      controller.abort()
-      window.clearInterval(interval)
-    }
-  }, [])
-
+      document.removeEventListener("keydown", onKey);
+      observer.disconnect();
+      clearTimeout(copyTimer.current);
+    };
+  }, []);
   useEffect(() => {
-    const handleScroll = () => {
-      setShowTop(window.scrollY > 600)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-
+    const controller = new AbortController();
+    const refresh = () =>
+      fetchGitHubActivity(controller.signal)
+        .then((result) => {
+          setActivity(result);
+          setGithubStatus("Live from GitHub");
+        })
+        .catch(() => {
+          if (!controller.signal.aborted)
+            setGithubStatus(
+              "Live activity unavailable. Explore the repositories on GitHub.",
+            );
+        });
+    void refresh();
+    const timer = setInterval(() => void refresh(), 600000);
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
-
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, []);
   useEffect(() => {
-    if (loading) return
+    terminalBody.current?.scrollTo({ top: terminalBody.current.scrollHeight });
+  }, [history]);
 
-    const timer = setTimeout(() => {
-      const letters =
-        nameRef.current?.querySelectorAll(".name-letter")
-
-      if (!letters) return
-
-      gsap.fromTo(
-        letters,
-        {
-          y: 100,
-          opacity: 0,
-          rotateX: -70
-        },
-        {
-          y: 0,
-          opacity: 1,
-          rotateX: 0,
-          stagger: 0.08,
-          duration: 1,
-          ease: "power4.out"
-        }
-      )
-    }, 250)
-
-    return () => clearTimeout(timer)
-  }, [loading])
-
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({
-      behavior: "smooth"
-    })
-
-    setMenuOpen(false)
+  function go(id: string) {
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: reduced ? "instant" : "smooth" });
+    setMenu(false);
+    palette.current?.close();
   }
-
-  const handleLetterMove = (
-    event: React.MouseEvent<HTMLSpanElement>
-  ) => {
-    const target = event.currentTarget
-    const rect = target.getBoundingClientRect()
-
-    const x =
-      event.clientX - rect.left - rect.width / 2
-
-    const y =
-      event.clientY - rect.top - rect.height / 2
-
-    gsap.to(target, {
-      x: x * 0.18,
-      y: y * 0.18,
-      rotate: x * 0.03,
-      duration: 0.3,
-      ease: "power2.out"
-    })
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setCopyError(false);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopyError(true);
+    }
   }
-
-  const resetLetter = (
-    event: React.MouseEvent<HTMLSpanElement>
-  ) => {
-    gsap.to(event.currentTarget, {
-      x: 0,
-      y: 0,
-      rotate: 0,
-      duration: 0.7,
-      ease: "elastic.out(1, 0.4)"
-    })
+  function runCommand(value: string) {
+    const cmd = value.trim().toLowerCase();
+    if (!cmd) return;
+    setCommand("");
+    if (cmd === "clear") {
+      setHistory([]);
+      return;
+    }
+    const responses: Record<string, string> = {
+      help: "Available commands: about · projects · skills · contact · theme · clear",
+      about:
+        "Dwij Kansagara — student, developer, and curious builder from India. Exploring AI, creative code, and robotics.",
+      projects: projects
+        .map((p) => p.title + " — " + p.description)
+        .join("\n\n"),
+      skills: skills.join(" / "),
+      contact: email + "\ngithub.com/DwijKansagara",
+      theme: "Switching perspective. A fresh coat of pixels.",
+      hello: "Hey! Happy you’re here. Try projects to see what I’m building.",
+      whoami: "A curious visitor. You’re in good company.",
+    };
+    if (cmd === "theme") setLight((value) => !value);
+    setHistory((old) => [
+      ...old.slice(-19),
+      {
+        command: value.trim(),
+        response:
+          responses[cmd] ||
+          `Command not found: ${value.trim()}. Type help for available commands.`,
+      },
+    ]);
   }
-
-  const handleContactSubmit = (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault()
-
-    const form = event.currentTarget
-    const formData = new FormData(form)
-
-    const name = formData.get("name")
-    const email = formData.get("email")
-    const message = formData.get("message")
-
-    const subject = encodeURIComponent(
-      `Portfolio message from ${name}`
-    )
-
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
-    )
-
-    setFormStatus("Opening your email app...")
-
-    window.location.href =
-      `mailto:kansagara.dwij@gmail.com?subject=${subject}&body=${body}`
-
-    setTimeout(() => {
-      setFormStatus("")
-      form.reset()
-    }, 2500)
-  }
-
-  const renderName = (text: string) =>
-    text.split("").map((letter, index) => (
-      <span
-        className="name-letter"
-        key={`${letter}-${index}`}
-        onMouseMove={handleLetterMove}
-        onMouseLeave={resetLetter}
-      >
-        {letter}
-      </span>
-    ))
+  const visibleProjects = projects.filter(
+    (project) =>
+      filter === "All work" ||
+      (filter === "AI & interaction"
+        ? project.visual !== "avengers"
+        : project.visual === "avengers"),
+  );
 
   return (
-    <>
-      {loading && (
-        <LoadingScreen progress={loadingProgress} />
-      )}
-
-      <div className={dark ? "app dark-theme" : "app light-theme"}>
-        <CustomCursor />
+    <MotionConfig reducedMotion="user">
+      <div className={`app ${paused ? "motion-paused" : ""}`}>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
         <motion.div
-          className="scroll-progress"
-          style={{ scaleX }}
+          className="reading-progress"
+          style={{ scaleX: reduced ? scrollYProgress : scaleX }}
         />
-
-        <div className="background-noise" />
-        <div className="background-glow glow-one" />
-        <div className="background-glow glow-two" />
-
-        <header className="navbar">
-          <button
-            className="brand"
-            onClick={() => scrollTo("home")}
-            aria-label="Go to home"
-          >
-            D<span>.</span>
-          </button>
-
+        <header className="navbar wrap">
+          <a className="brand" href="#home" aria-label="Dwij Kansagara home">
+            dwij<span>✳</span>
+          </a>
           <nav
-            className={
-              menuOpen
-                ? "nav-links active"
-                : "nav-links"
-            }
+            id="navigation"
+            className={menu ? "navigation is-open" : "navigation"}
+            aria-label="Main navigation"
           >
-            <button onClick={() => scrollTo("home")}>
-              HOME
-            </button>
-
-            <button onClick={() => scrollTo("about")}>
-              ABOUT
-            </button>
-
-            <button onClick={() => scrollTo("projects")}>
-              PROJECTS
-            </button>
-
-            <button onClick={() => scrollTo("github")}>
-              GITHUB
-            </button>
-
-            <button onClick={() => scrollTo("skills")}>
-              SKILLS
-            </button>
-
-            <button onClick={() => scrollTo("journey")}>
-              JOURNEY
-            </button>
-
-            <button onClick={() => scrollTo("contact")}>
-              CONTACT
-            </button>
+            {nav.map(([id, label]) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={() => setMenu(false)}
+                aria-current={active === id ? "location" : undefined}
+              >
+                {label}
+              </a>
+            ))}
           </nav>
-
           <div className="nav-actions">
             <button
-              className="theme-button"
-              onClick={() => setDark(!dark)}
-              aria-label="Toggle theme"
+              className="command-trigger"
+              onClick={() => palette.current?.showModal()}
+              aria-label="Open command menu"
             >
-              {dark ? (
-                <Sun size={18} />
-              ) : (
-                <Moon size={18} />
-              )}
+              <Command size={15} />
+              <span>K</span>
             </button>
-
             <button
-              className="menu-button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
+              className="icon-button"
+              onClick={() => setLight(!light)}
+              aria-label={
+                light ? "Switch to dark theme" : "Switch to light theme"
+              }
             >
-              {menuOpen ? (
-                <X size={21} />
-              ) : (
-                <Menu size={21} />
-              )}
+              {light ? <Moon size={17} /> : <Sun size={17} />}
+            </button>
+            <a className="nav-contact" href="#contact">
+              Let’s talk <ArrowUpRight size={15} />
+            </a>
+            <button
+              className="icon-button menu-toggle"
+              onClick={() => setMenu(!menu)}
+              aria-label={menu ? "Close menu" : "Open menu"}
+              aria-expanded={menu}
+              aria-controls="navigation"
+            >
+              {menu ? <X /> : <Menu />}
             </button>
           </div>
         </header>
-
-        <main>
-          <section id="home" className="hero">
-            <div className="hero-grid" />
-
-            <div className="hero-top">
-              <div className="availability">
-                <span />
-                CURRENTLY BUILDING & LEARNING
-              </div>
-
-              <div>2026 / INDIA</div>
+        <main id="main">
+          <section id="home" className="hero wrap">
+            <div className="hero-topline mono">
+              <span>
+                <i className="status-dot" /> CURIOUS MIND. ALWAYS BUILDING.
+              </span>
+              <span>
+                INDIA <span className="muted">/</span> {time || "IST"} IST
+              </span>
             </div>
-
-            <div className="hero-content">
-              <p className="hero-label">
-                DEVELOPER · AI ENTHUSIAST · BUILDER
-              </p>
-
-              <h1 ref={nameRef} aria-label="Dwij">
-                <span className="name-row single-name">
-                  {renderName("DWIJ")}
-                </span>
-              </h1>
-            </div>
-
-            <div className="hero-bottom">
-              <p>
-                A student who enjoys turning
-                <br />
-                <strong>
-                  ideas into things you can interact with.
-                </strong>
-              </p>
-
-              <button
-                className="explore-button"
-                onClick={() => scrollTo("projects")}
-              >
-                EXPLORE MY WORK
-                <ArrowDownRight size={18} />
-              </button>
-            </div>
-
-            <div className="hero-orb">
-              <div className="orb-ring orb-ring-one" />
-              <div className="orb-ring orb-ring-two" />
-
-              <div className="orb-core">D</div>
-            </div>
-
-            <div className="scroll-side">
-              SCROLL TO EXPLORE ↓
-            </div>
-          </section>
-
-          <section
-            id="about"
-            className="section about-section"
-          >
-            <span className="section-index">
-              01 / ABOUT
-            </span>
-
-            <motion.div
-              className="about-content"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.7 }}
-            >
-              <p className="section-kicker">
-                A LITTLE ABOUT ME
-              </p>
-
-              <h2>
-                I learn by
-                <br />
-                <span>building things.</span>
-              </h2>
-
-              <div className="about-text-grid">
-                <p>
-                  I'm a student and developer who enjoys
-                  turning ideas into interactive projects.
-                  I'm especially interested in artificial
-                  intelligence, software, robotics and
-                  creative technology.
+            <div className="hero-layout">
+              <div className="hero-copy">
+                <p className="eyebrow">
+                  DWIJ KANSAGARA — DEVELOPER & AI ENTHUSIAST
                 </p>
-
-                <p>
-                  Most of what I learn comes from
-                  experimenting, breaking things, fixing them
-                  and building again. I'm still learning, and
-                  that's exactly what makes technology
-                  exciting to me.
-                </p>
-              </div>
-
-              <div className="interest-pills">
-                {[
-                  "ARTIFICIAL INTELLIGENCE",
-                  "CREATIVE CODE",
-                  "ROBOTICS",
-                  "WEB EXPERIENCES",
-                  "EXPERIMENTATION"
-                ].map(item => (
-                  <span key={item}>{item}</span>
-                ))}
-              </div>
-            </motion.div>
-          </section>
-
-          <section className="statement-section">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="statement-icon">✦</div>
-
-              <h2>
-                Curiosity is where
-                <br />
-                <span>every project starts.</span>
-              </h2>
-
-              <div className="statement-line" />
-
-              <p>
-                THINK · EXPERIMENT · BUILD · IMPROVE
-              </p>
-            </motion.div>
-          </section>
-
-          <section
-            id="projects"
-            className="section projects-section"
-          >
-            <div className="projects-header">
-              <div>
-                <span className="section-index">
-                  02 / PROJECTS
-                </span>
-
-                <h2>
-                  Things I've
-                  <br />
-                  <span>built so far.</span>
-                </h2>
-              </div>
-
-              <p>
-                A collection of experiments exploring AI,
-                interaction, web development and creative
-                technology.
-              </p>
-            </div>
-
-            <div className="projects-list">
-              {projects.map((project, index) => (
-                <motion.article
-                  className="project-card"
-                  key={project.title}
-                  initial={{ opacity: 0, y: 70 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{
-                    once: true,
-                    amount: 0.15
-                  }}
-                  transition={{
-                    duration: 0.7,
-                    delay: index * 0.08
-                  }}
+                <motion.h1
+                  initial={{ opacity: 0, y: 25 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
                 >
-                  <div className="project-number">
-                    {project.number}
-                  </div>
-
-                  <ProjectVisual type={project.visual} />
-
-                  <div className="project-info">
-                    <p className="project-category">
-                      {project.category}
-                    </p>
-
-                    <h3>{project.title}</h3>
-
-                    <p className="project-description">
-                      {project.description}
-                    </p>
-
-                    <div className="project-footer">
-                      <div className="project-tags">
-                        {project.tags.map(tag => (
-                          <span key={tag}>{tag}</span>
-                        ))}
-                      </div>
-
-                      <a
-                        href={project.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open ${project.title} on GitHub`}
-                      >
-                        <ArrowUpRight size={22} />
-                      </a>
+                  Curiosity,
+                  <br />
+                  made
+                  <br />
+                  <em>tangible.</em>
+                  <span className="headline-dot">*</span>
+                </motion.h1>
+                <p className="hero-description">
+                  I turn “what if” into something you can interact with.
+                  <br className="desktop-break" /> Exploring the space between
+                  code, AI, and imagination.
+                </p>
+                <div className="hero-buttons">
+                  <a className="button primary" href="#projects">
+                    Explore my work <ArrowDown size={17} />
+                  </a>
+                  <a className="text-link" href="#about">
+                    A little about me <ArrowUpRight size={17} />
+                  </a>
+                </div>
+              </div>
+              <div className="sculpture">
+                <span className="sculpture-corner mono">
+                  FIG. 001 / AN IDEA TAKING SHAPE
+                </span>
+                <ParticleSculpture paused={paused} light={light} />
+                <div className="sculpture-caption">
+                  <span className="mono">CODE, WITH A LITTLE CURIOSITY.</span>
+                  <button
+                    className="icon-button"
+                    onClick={() => setPaused(!paused)}
+                    aria-label={
+                      paused
+                        ? "Play ambient animation"
+                        : "Pause ambient animation"
+                    }
+                  >
+                    {paused ? <Play size={14} /> : <Pause size={14} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="hero-footer mono">
+              <span>STUDENT BY DAY. BUILDER BY NATURE.</span>
+              <a href="#projects">
+                SCROLL TO DISCOVER <ArrowDown size={15} />
+              </a>
+              <span>SELECTED EXPLORATIONS / 2026</span>
+            </div>
+          </section>
+          <div className="discipline-strip" aria-label="Areas of interest">
+            <div className="wrap">
+              <span>CREATIVE DEVELOPMENT</span>
+              <span className="asterisk">✳</span>
+              <span>ARTIFICIAL INTELLIGENCE</span>
+              <span className="asterisk">✳</span>
+              <span>HUMAN INTERACTION</span>
+              <span className="asterisk">✳</span>
+              <span>ENDLESS CURIOSITY</span>
+            </div>
+          </div>
+          <section id="projects" className="section wrap">
+            <Reveal>
+              <div className="section-label mono">
+                <span>01 / SELECTED WORK</span>
+                <span>IDEAS → EXPERIMENTS → EXPERIENCES</span>
+              </div>
+              <div className="section-heading">
+                <h2>
+                  A few things
+                  <br />
+                  I’ve <span className="serif">brought to life.</span>
+                </h2>
+                <p>
+                  Different questions. Different mediums.
+                  <br />
+                  The same drive to make something interesting.
+                </p>
+              </div>
+            </Reveal>
+            <div className="project-toolbar">
+              <div
+                className="filters"
+                role="group"
+                aria-label="Filter projects"
+              >
+                {["All work", "AI & interaction", "Creative web"].map(
+                  (item) => (
+                    <button
+                      key={item}
+                      aria-pressed={filter === item}
+                      onClick={() => setFilter(item)}
+                    >
+                      {item}
+                      {item === "All work" && <span>03</span>}
+                    </button>
+                  ),
+                )}
+              </div>
+              <span className="mono result-count" aria-live="polite">
+                {String(visibleProjects.length).padStart(2, "0")} PROJECTS
+              </span>
+            </div>
+            <div className="projects-grid">
+              {visibleProjects.map((project) => (
+                <motion.article
+                  layout={!reduced}
+                  key={project.title}
+                  className={`project-card project-${project.visual}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <a
+                    className="project-art-link"
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Explore ${project.title} on GitHub`}
+                  >
+                    <div className="project-art-top mono">
+                      <span>EXPERIMENT / {project.number}</span>
+                      <span>
+                        {project.visual === "lumina"
+                          ? "SOUND × GESTURE"
+                          : project.visual === "jarvis"
+                            ? "VOICE × INTELLIGENCE"
+                            : "STORY × INTERACTION"}
+                      </span>
+                    </div>
+                    <ProjectVisual type={project.visual} />
+                    <span className="project-view">
+                      Explore project <ArrowUpRight size={18} />
+                    </span>
+                  </a>
+                  <div className="project-details">
+                    <div className="project-title-row">
+                      <h3>
+                        <a
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {project.title}
+                        </a>
+                      </h3>
+                      <ArrowUpRight size={23} />
+                    </div>
+                    <p>{project.description}</p>
+                    <div className="tags">
+                      {project.tags.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
                     </div>
                   </div>
                 </motion.article>
               ))}
             </div>
-          </section>
-
-          <section
-            id="github"
-            className="section github-section"
-          >
-            <div className="github-heading">
-              <div>
-                <span className="section-index">
-                  03 / GITHUB
-                </span>
-
-                <h2>
-                  Building in
-                  <br />
-                  <span>public.</span>
-                </h2>
-              </div>
-
-              <p>
-                Follow my journey, explore my projects and
-                see what I'm currently building.
-              </p>
-            </div>
-
-            {githubLoading ? (
-              <div className="github-loading">
-                <div className="github-loader" />
-
-                <span>
-                  FETCHING GITHUB PROFILE...
-                </span>
-              </div>
-            ) : githubActivity ? (
-              <div className="github-live-stack">
-              <motion.div
-                className="github-card"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
-              >
-                <div className="github-profile-top">
-                  <div className="github-avatar-wrap">
-                    <img
-                      src={githubActivity.profile.avatar_url}
-                      alt="Dwij GitHub profile"
-                      className="github-avatar"
-                    />
-
-                    <span className="github-online-dot" />
-                  </div>
-
-                  <div className="github-user-info">
-                    <div className="github-icon-row">
-                      <GitBranch size={20} />
-
-                      <span>
-                        @
-                        {githubActivity.profile.login}
-                      </span>
-                    </div>
-
-                    <h3>
-                      {githubActivity.profile.name || "Dwij"}
-                    </h3>
-
-                    <p>
-                      {githubActivity.profile.bio ||
-                        "Developer · AI Enthusiast · Builder"}
-                    </p>
-                  </div>
-
-                  <a
-                    href={githubActivity.profile.html_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="github-visit"
-                  >
-                    VISIT PROFILE
-                    <ExternalLink size={16} />
-                  </a>
-                </div>
-
-                <div className="github-stats">
-                  <div className="github-stat">
-                    <BookOpen size={19} />
-
-                    <strong>
-                      {githubActivity.profile.public_repos}
-                    </strong>
-
-                    <span>PUBLIC REPOS</span>
-                  </div>
-
-                  <div className="github-stat">
-                    <Users size={19} />
-
-                    <strong>
-                      {githubActivity.profile.followers}
-                    </strong>
-
-                    <span>FOLLOWERS</span>
-                  </div>
-
-                  <div className="github-stat">
-                    <UserPlus size={19} />
-
-                    <strong>
-                      {githubActivity.profile.following}
-                    </strong>
-
-                    <span>FOLLOWING</span>
-                  </div>
-                </div>
-
-                <div className="github-card-footer">
-                  <span className="github-refresh-status">
-                    <RefreshCw
-                      size={13}
-                      className={githubRefreshing ? "is-refreshing" : ""}
-                    />
-                    AUTO-REFRESHED FROM GITHUB
-                  </span>
-
-                  <a
-                    href="https://github.com/DwijKansagara"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    github.com/DwijKansagara
-                    <ArrowUpRight size={15} />
-                  </a>
-                </div>
-              </motion.div>
-
-              <div className="github-repositories">
-                <div className="live-feed-heading">
-                  <div>
-                    <span>LIVE REPOSITORIES</span>
-                    <h3>Recently updated</h3>
-                  </div>
-
-                  <span>
-                    SYNCED {githubActivity.refreshedAt.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    })}
-                  </span>
-                </div>
-
-                <div className="github-repo-grid">
-                  {githubActivity.repositories.map(repository => (
-                    <a
-                      className="github-repo"
-                      href={repository.html_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      key={repository.id}
-                    >
-                      <div className="github-repo-top">
-                        <GitBranch size={17} />
-                        <ArrowUpRight size={17} />
-                      </div>
-
-                      <h4>{repository.name}</h4>
-                      <p>
-                        {repository.description ||
-                          "Open-source project on GitHub."}
-                      </p>
-
-                      <div className="github-repo-meta">
-                        <span>{repository.language || "Project"}</span>
-                        <span>
-                          <Star size={12} /> {repository.stargazers_count}
-                        </span>
-                        <span>{formatUpdatedDate(repository.updated_at)}</span>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              <div className="social-live" aria-labelledby="social-live-title">
-                <div className="social-live-copy">
-                  <span className="section-index">SOCIAL / INSTAGRAM</span>
-                  <h3 id="social-live-title">
-                    Follow the
-                    <br />
-                    <span>process.</span>
-                  </h3>
-                  <p>
-                    Experiments, progress and moments beyond the code live on
-                    my official Instagram profile.
-                  </p>
-                  <a
-                    href="https://www.instagram.com/dwij.kansagara/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    OPEN @DWIJ.KANSAGARA
-                    <ArrowUpRight size={16} />
-                  </a>
-                </div>
-
-                <div className="instagram-profile-art" aria-hidden="true">
-                  <div className="instagram-orbit instagram-orbit-one" />
-                  <div className="instagram-orbit instagram-orbit-two" />
-                  <span className="instagram-monogram">IG</span>
-                  <div>
-                    <strong>@dwij.kansagara</strong>
-                    <span>VIEW CURRENT PROFILE ↗</span>
-                  </div>
-                </div>
-              </div>
-              </div>
-            ) : (
-              <div className="github-error">
-                <GitBranch size={28} />
-
-                <p>
-                  GitHub profile couldn't be loaded right
-                  now.
-                </p>
-
-                <a
-                  href="https://github.com/DwijKansagara"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  VISIT GITHUB
-                  <ArrowUpRight size={16} />
-                </a>
-              </div>
-            )}
-          </section>
-
-          <section
-            id="journey"
-            className="section journey-section"
-          >
-            <span className="section-index">
-              04 / JOURNEY
-            </span>
-
-            <motion.div
-              className="journey-content"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+            <a
+              className="work-footnote"
+              href="https://github.com/DwijKansagara"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <p className="section-kicker">
-                WHAT I'M EXPLORING
-              </p>
-
-              <h2>
-                Still learning.
-                <br />
-                <span>Still building.</span>
-              </h2>
-
-              <div className="journey-card">
-                <span>RIGHT NOW</span>
-
-                <div>
-                  <h3>
-                    Exploring technology one project at a
-                    time.
-                  </h3>
-
-                  <p>
-                    I'm currently focused on improving my
-                    programming skills, experimenting with AI
-                    and machine learning, building interactive
-                    web experiences and exploring the
-                    possibilities of robotics.
-                  </p>
-                </div>
-              </div>
-
-              <div className="journey-stats">
-                <div>
-                  <strong>AI</strong>
-
-                  <span>
-                    EXPLORING INTELLIGENT SYSTEMS
-                  </span>
-                </div>
-
-                <div>
-                  <strong>CODE</strong>
-
-                  <span>
-                    LEARNING BY BUILDING
-                  </span>
-                </div>
-
-                <div>
-                  <strong>MAKE</strong>
-
-                  <span>
-                    TURNING IDEAS INTO PROJECTS
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          </section>
-
-          <section
-            id="skills"
-            className="section skills-section"
-          >
-            <div className="skills-heading">
-              <span className="section-index">
-                05 / SKILLS
+              <Github size={17} /> More experiments, open source, and works in
+              progress{" "}
+              <span>
+                On GitHub <ArrowUpRight size={16} />
               </span>
-
-              <h2>
-                Tools I'm
-                <br />
-                <span>growing with.</span>
-              </h2>
+            </a>
+          </section>
+          <section id="about" className="about-section">
+            <div className="wrap about-grid">
+              <Reveal>
+                <span className="mono section-label">
+                  02 / THE PERSON BEHIND THE PIXELS
+                </span>
+                <h2>
+                  Less “what if.”
+                  <br />
+                  More <span className="serif">“let’s try.”</span>
+                </h2>
+                <div className="about-signature">
+                  dwij<span>↗</span>
+                </div>
+              </Reveal>
+              <Reveal className="about-copy">
+                <p className="large-copy">
+                  Hi, I’m Dwij. A student, developer, and a firm believer that
+                  the best way to understand something is to build it.
+                </p>
+                <p>
+                  I’m drawn to technology that makes you feel something: an
+                  interface that responds to a gesture, an assistant that
+                  understands your voice, a small idea that becomes a whole new
+                  experience.
+                </p>
+                <p>
+                  I learn by experimenting, breaking things, and making them
+                  better. Right now, that means exploring AI, interactive web
+                  experiences, and the possibilities of robotics.
+                </p>
+                <div className="about-values mono">
+                  <span>
+                    <Sparkles size={17} /> CURIOSITY FIRST
+                  </span>
+                  <span>
+                    <Code2 size={17} /> LEARN BY DOING
+                  </span>
+                </div>
+              </Reveal>
             </div>
-
-            <div className="skills-list">
-              {skills.map((skill, index) => (
-                <motion.div
-                  className="skill-row"
-                  key={skill}
-                  initial={{ opacity: 0, x: 35 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.45,
-                    delay: index * 0.05
-                  }}
-                  whileHover={{ x: 10 }}
-                >
-                  <span>0{index + 1}</span>
-
-                  <h3>{skill}</h3>
-
-                  <ArrowUpRight size={18} />
-                </motion.div>
+          </section>
+          <section id="skills" className="section wrap">
+            <Reveal>
+              <div className="section-label mono">
+                <span>03 / THE TOOLBOX</span>
+                <span>ALWAYS A WORK IN PROGRESS</span>
+              </div>
+              <div className="section-heading">
+                <h2>
+                  Tools change.
+                  <br />
+                  <span className="serif">The mindset stays.</span>
+                </h2>
+                <p>
+                  The languages and tools I reach for
+                  <br />
+                  to take an idea from sketch to screen.
+                </p>
+              </div>
+            </Reveal>
+            <div className="stack-grid">
+              {[
+                {
+                  icon: Code2,
+                  title: "Build the experience",
+                  sub: "FRONTEND & INTERACTION",
+                  items: ["JavaScript", "TypeScript", "React", "UI / UX"],
+                },
+                {
+                  icon: Cpu,
+                  title: "Explore intelligence",
+                  sub: "AI & EXPERIMENTATION",
+                  items: ["Python", "AI / Machine Learning", "TensorFlow"],
+                },
+                {
+                  icon: Github,
+                  title: "Connect the pieces",
+                  sub: "TOOLS & PHYSICAL COMPUTING",
+                  items: ["GitHub", "Robotics"],
+                },
+              ].map(({ icon: Icon, title, sub, items }) => (
+                <Reveal className="stack-card" key={title}>
+                  <div className="stack-icon">
+                    <Icon size={25} />
+                  </div>
+                  <span className="mono">{sub}</span>
+                  <h3>{title}</h3>
+                  <div className="stack-items">
+                    {items.map((item) => (
+                      <span key={item}>
+                        <i />
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </Reveal>
               ))}
             </div>
           </section>
-
-          <section
-            id="contact"
-            className="contact-section"
-          >
-            <div className="contact-top">
-              <span>06 / CONTACT</span>
-
-              <span className="contact-status" />
-            </div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-            >
-              Let's build
-              <br />
-              <span>something cool.</span>
-            </motion.h2>
-
-            <div className="contact-layout">
-              <div className="contact-info">
-                <p>
-                  Have an idea, project or something
-                  interesting to share? Drop me a message.
+          <section id="playground" className="playground wrap">
+            <Reveal className="playground-copy">
+              <span className="section-label mono">
+                04 / A LITTLE INTERACTION
+              </span>
+              <h2>
+                Go ahead.
+                <br />
+                <span className="serif">Poke around.</span>
+              </h2>
+              <p>
+                For the curious ones who’d rather explore
+                <br />
+                with a keyboard. Make yourself at home.
+              </p>
+              <div className="terminal-shortcuts">
+                {["about", "projects", "skills", "help"].map((cmd) => (
+                  <button key={cmd} onClick={() => runCommand(cmd)}>
+                    {cmd}
+                    <ArrowUpRight size={13} />
+                  </button>
+                ))}
+              </div>
+              <span className="mono terminal-note">
+                NO INSTALLATION. JUST A LITTLE DISCOVERY.
+              </span>
+            </Reveal>
+            <Reveal className="terminal-window">
+              <div className="terminal-bar">
+                <div className="window-dots" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <span className="mono">dwij@portfolio: ~</span>
+                <Terminal size={15} />
+              </div>
+              <div
+                className="terminal-body"
+                ref={terminalBody}
+                role="log"
+                aria-live="polite"
+                aria-label="Terminal output"
+              >
+                {history.map((entry, index) => (
+                  <div key={index} className="terminal-entry">
+                    <p>
+                      <span>visitor@dwij</span> <b>~ $</b> {entry.command}
+                    </p>
+                    <p className="terminal-response">{entry.response}</p>
+                  </div>
+                ))}
+              </div>
+              <form
+                className="terminal-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  runCommand(command);
+                }}
+              >
+                <label htmlFor="terminal-input">~ $</label>
+                <input
+                  id="terminal-input"
+                  aria-label="Terminal command"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={command}
+                  onChange={(event) => setCommand(event.target.value)}
+                  placeholder="Type a command…"
+                />
+                <button type="submit" aria-label="Run command">
+                  <ArrowRight size={18} />
+                </button>
+              </form>
+            </Reveal>
+          </section>
+          <section id="journey" className="section wrap">
+            <div className="journey-layout">
+              <Reveal>
+                <span className="section-label mono">05 / NEVER FINISHED</span>
+                <h2>
+                  One question.
+                  <br />
+                  One experiment.
+                  <br />
+                  <span className="serif">One step further.</span>
+                </h2>
+                <p className="journey-intro">
+                  No overnight origin story. Just a growing collection of things
+                  I’ve tried, things I’ve learned, and things I want to figure
+                  out.
                 </p>
-
-                <div className="contact-links">
-                  <a
-                    href="mailto:kansagara.dwij@gmail.com"
-                    aria-label="Send email"
+              </Reveal>
+              <div className="timeline">
+                {[
+                  {
+                    label: "THE FOUNDATION",
+                    title: "Learning to speak in code.",
+                    text: "Programming fundamentals, small experiments, and the satisfaction of making something work.",
+                  },
+                  {
+                    label: "THE EXPLORATION",
+                    title: "Making things respond.",
+                    text: "Bringing interfaces, music, and voice together through projects like LUMINA AI and J.A.R.V.I.S.",
+                  },
+                  {
+                    label: "RIGHT NOW",
+                    title: "Following the next question.",
+                    text: "Deepening my understanding of AI and machine learning, polishing web experiences, and exploring robotics.",
+                  },
+                ].map((step, i) => (
+                  <Reveal
+                    className={`timeline-step ${i === 2 ? "current" : ""}`}
+                    key={step.label}
                   >
-                    <Mail size={18} />
-                    EMAIL
+                    <span className="timeline-node" />
+                    <span className="mono">{step.label}</span>
+                    <h3>{step.title}</h3>
+                    <p>{step.text}</p>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+          <section id="github" className="github-section wrap">
+            <div className="github-heading">
+              <div>
+                <span className="section-label mono">BUILDING IN PUBLIC</span>
+                <h3>The latest from the workbench.</h3>
+              </div>
+              <a
+                className="text-link"
+                href="https://github.com/DwijKansagara"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                @DwijKansagara <ArrowUpRight size={18} />
+              </a>
+            </div>
+            <div className="github-status mono">
+              {activity && <i className="status-dot" />}
+              {githubStatus}
+              {activity && (
+                <span>
+                  {" "}
+                  / {activity.profile.public_repos} PUBLIC REPOSITORIES
+                </span>
+              )}
+            </div>
+            {activity && (
+              <div className="repo-grid">
+                {activity.repositories.slice(0, 3).map((repo) => (
+                  <a
+                    className="repo-card"
+                    key={repo.id}
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div>
+                      <Github size={19} />
+                      <ArrowUpRight size={17} />
+                    </div>
+                    <h4>{repo.name}</h4>
+                    <p>
+                      {repo.description ||
+                        "An ongoing exploration in code. Dive into the repository."}
+                    </p>
+                    <span className="mono">
+                      {repo.language || "SOURCE"}{" "}
+                      <span>UPDATED {formatUpdatedDate(repo.updated_at)}</span>
+                    </span>
                   </a>
-
+                ))}
+              </div>
+            )}
+          </section>
+          <section id="contact" className="contact-section wrap">
+            <Reveal>
+              <div className="section-label mono">
+                <span>06 / YOUR IDEA COULD BE NEXT</span>
+                <span>LET’S MAKE SOMETHING INTERESTING</span>
+              </div>
+              <div className="contact-heading">
+                <h2>
+                  Good things start
+                  <br />
+                  with <span className="serif">a conversation.</span>
+                </h2>
+                <a
+                  className="contact-arrow"
+                  href={`mailto:${email}`}
+                  aria-label="Email Dwij"
+                >
+                  <ArrowUpRight />
+                </a>
+              </div>
+              <div className="contact-bottom">
+                <div>
+                  <p>
+                    A project, a question, or just a hello.
+                    <br />
+                    I’d love to hear what’s on your mind.
+                  </p>
+                  <div className="email-row">
+                    <a href={`mailto:${email}`}>{email}</a>
+                    <button
+                      className="icon-button"
+                      onClick={() => void copyEmail()}
+                      aria-label={
+                        copied ? "Email copied" : "Copy email address"
+                      }
+                    >
+                      {copied ? <Check size={17} /> : <Copy size={17} />}
+                    </button>
+                  </div>
+                  <span className="copy-status" role="status">
+                    {copied
+                      ? "Email copied to clipboard."
+                      : copyError
+                        ? "Please select and copy the email address above."
+                        : ""}
+                  </span>
+                </div>
+                <div className="social-links">
                   <a
                     href="https://github.com/DwijKansagara"
                     target="_blank"
-                    rel="noreferrer"
-                    aria-label="Visit GitHub"
+                    rel="noopener noreferrer"
                   >
-                    <span className="social-symbol">
-                      GH
-                    </span>
-
-                    GITHUB
+                    <Github size={18} /> GitHub <ArrowUpRight size={16} />
                   </a>
-
                   <a
                     href="https://www.instagram.com/dwij.kansagara/"
                     target="_blank"
-                    rel="noreferrer"
-                    aria-label="Visit Instagram"
+                    rel="noopener noreferrer"
                   >
-                    <span className="social-symbol">
-                      IG
-                    </span>
-
-                    INSTAGRAM
+                    <Instagram size={18} /> Instagram <ArrowUpRight size={16} />
                   </a>
                 </div>
               </div>
-
-              <form
-                className="contact-form"
-                onSubmit={handleContactSubmit}
-              >
-                <label>
-                  YOUR NAME
-
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="What should I call you?"
-                    required
-                  />
-                </label>
-
-                <label>
-                  YOUR EMAIL
-
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </label>
-
-                <label>
-                  MESSAGE
-
-                  <textarea
-                    name="message"
-                    placeholder="Tell me what's on your mind..."
-                    required
-                    rows={5}
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  className="send-button"
+              <details className="contact-compose">
+                <summary>
+                  Prefer to write your message here? <ArrowDown size={16} />
+                </summary>
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const data = new FormData(event.currentTarget);
+                    window.location.href = `mailto:${email}?subject=${encodeURIComponent(`Portfolio message from ${data.get("name")}`)}&body=${encodeURIComponent(`From: ${data.get("name")} <${data.get("email")}>\n\n${data.get("message")}`)}`;
+                    setFormStatus(
+                      "Your email app will open with this draft. Send it there to deliver your message. If it does not open, copy the email address above. Your message stays here.",
+                    );
+                  }}
                 >
-                  SEND MESSAGE
-                  <Send size={17} />
-                </button>
-
-                {formStatus && (
-                  <p className="form-status">
-                    {formStatus}
+                  <label>
+                    Your name
+                    <input
+                      name="name"
+                      required
+                      maxLength={120}
+                      autoComplete="name"
+                    />
+                  </label>
+                  <label>
+                    Your email
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      maxLength={254}
+                      autoComplete="email"
+                    />
+                  </label>
+                  <label className="full-width">
+                    What are you thinking?
+                    <textarea
+                      name="message"
+                      required
+                      maxLength={3000}
+                      rows={4}
+                    />
+                  </label>
+                  <button className="button primary" type="submit">
+                    Open email draft <ArrowUpRight size={17} />
+                  </button>
+                  <p role="status">
+                    {formStatus ||
+                      "Opens your email app; nothing is sent automatically."}
                   </p>
-                )}
-              </form>
-            </div>
+                </form>
+              </details>
+            </Reveal>
           </section>
         </main>
-
-        <footer>
-          <span>
-            © {new Date().getFullYear()} DWIJ
-          </span>
-
-          <span>
-            BUILT WITH CURIOSITY + CODE.
-          </span>
+        <footer className="footer wrap">
+          <a className="brand" href="#home">
+            dwij<span>✳</span>
+          </a>
+          <p className="mono">
+            © {new Date().getFullYear()} DWIJ KANSAGARA
+            <br />
+            <span>BUILT WITH INTENTION. AND A LOT OF CURIOSITY.</span>
+          </p>
+          <button className="text-link" onClick={() => go("home")}>
+            Back to top <ArrowUpRight size={17} />
+          </button>
         </footer>
-
         <PortfolioAssistant />
-
-        {showTop && (
-          <motion.button
-            className="back-top"
-            onClick={() => scrollTo("home")}
-            aria-label="Back to top"
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            ↑
-          </motion.button>
-        )}
+        <dialog
+          className="command-dialog"
+          ref={palette}
+          aria-labelledby="command-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) palette.current?.close();
+          }}
+        >
+          <div className="command-head">
+            <div>
+              <span className="mono">TAKE A SHORTCUT</span>
+              <h2 id="command-title">Where to?</h2>
+            </div>
+            <button
+              className="icon-button"
+              onClick={() => palette.current?.close()}
+              aria-label="Close command menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          {[
+            ...nav,
+            ["playground", "Interactive terminal"],
+            ["github", "GitHub activity"],
+            ["contact", "Get in touch"],
+          ].map(([id, label], index) => (
+            <button className="command-option" key={id} onClick={() => go(id)}>
+              <span>
+                <span className="mono">0{index + 1}</span>
+                {label}
+              </span>
+              <ArrowUpRight size={17} />
+            </button>
+          ))}
+          <p className="mono">
+            TAB TO NAVIGATE · ENTER TO SELECT · ESC TO CLOSE
+          </p>
+        </dialog>
       </div>
-    </>
-  )
+    </MotionConfig>
+  );
 }
-
-function LoadingScreen({
-  progress
-}: {
-  progress: number
-}) {
-  return (
-    <motion.div
-      className="loading-screen"
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <div className="loading-grid" />
-
-      <motion.div
-        className="loading-content"
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="loading-symbol">
-          <span>D</span>
-        </div>
-
-        <p className="loading-small">
-          PORTFOLIO_2026
-        </p>
-
-        <h1>DWIJ</h1>
-
-        <div className="loading-bar-container">
-          <div className="loading-bar-track">
-            <motion.div
-              className="loading-bar-fill"
-              animate={{
-                width: `${progress}%`
-              }}
-              transition={{
-                duration: 0.25
-              }}
-            />
-          </div>
-
-          <span>{progress}%</span>
-        </div>
-
-        <div className="loading-status">
-          <span className="loading-dot" />
-
-          {progress < 35 && "INITIALIZING EXPERIENCE..."}
-          {progress >= 35 &&
-            progress < 70 &&
-            "LOADING PROJECTS..."}
-          {progress >= 70 &&
-            progress < 100 &&
-            "ALMOST READY..."}
-          {progress === 100 &&
-            "WELCOME."}
-        </div>
-      </motion.div>
-
-      <div className="loading-footer">
-        <span>DEVELOPER · AI ENTHUSIAST</span>
-
-        <span>INDIA / 2026</span>
-      </div>
-    </motion.div>
-  )
-}
-
-export function ProjectVisual({
-  type
-}: {
-  type: string
-}) {
-  if (type === "lumina") {
-    return (
-      <div className="project-visual">
-        <div className="project-art lumina-art">
-          <div className="art-glow" />
-
-          <div className="music-orb">
-            <div className="music-ring ring-a" />
-            <div className="music-ring ring-b" />
-            <div className="music-ring ring-c" />
-
-            <span>♫</span>
-          </div>
-
-          <div className="equalizer">
-            {Array.from({ length: 18 }).map(
-              (_, index) => (
-                <span key={index} />
-              )
-            )}
-          </div>
-
-          <span className="art-label">
-            AI MUSIC INTERACTION
-          </span>
-        </div>
-      </div>
-    )
-  }
-
-  if (type === "jarvis") {
-    return (
-      <div className="project-visual">
-        <div className="project-art jarvis-art">
-          <div className="hud-circle hud-one" />
-          <div className="hud-circle hud-two" />
-          <div className="hud-circle hud-three" />
-
-          <div className="hud-line line-one" />
-          <div className="hud-line line-two" />
-
-          <div className="jarvis-core">
-            <span>AI</span>
-          </div>
-
-          <div className="system-data">
-            <span>SYSTEM ONLINE</span>
-            <span>VOICE READY</span>
-            <span>CORE ACTIVE</span>
-          </div>
-
-          <span className="art-label">
-            INTELLIGENT SYSTEM
-          </span>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="project-visual">
-      <div className="project-art avengers-art">
-        <div className="portal portal-one" />
-        <div className="portal portal-two" />
-        <div className="portal portal-three" />
-
-        <div className="avengers-symbol">
-          <span>A</span>
-        </div>
-
-        <div className="particle particle-one" />
-        <div className="particle particle-two" />
-        <div className="particle particle-three" />
-        <div className="particle particle-four" />
-
-        <span className="art-label">
-          CREATIVE WEB EXPERIENCE
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function CustomCursor() {
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  const springConfig = { damping: 25, stiffness: 250, mass: 0.5 }
-  const cursorX = useSpring(mouseX, springConfig)
-  const cursorY = useSpring(mouseY, springConfig)
-
-  const [isHovering, setIsHovering] = useState(false)
-
-  useEffect(() => {
-    const updateMousePosition = (e: MouseEvent) => {
-      mouseX.set(e.clientX - 4)
-      mouseY.set(e.clientY - 4)
-      
-      const target = e.target as HTMLElement
-      const isHoverable = target.closest("a, button, input, textarea, [role='button']")
-      setIsHovering(!!isHoverable)
-    }
-
-    window.addEventListener("mousemove", updateMousePosition)
-    return () => window.removeEventListener("mousemove", updateMousePosition)
-  }, [mouseX, mouseY])
-
-  return (
-    <>
-      <motion.div
-        className="cursor-dot"
-        style={{
-          x: mouseX,
-          y: mouseY,
-        }}
-        animate={{
-          scale: isHovering ? 2.5 : 1,
-          opacity: isHovering ? 0 : 1,
-        }}
-        transition={{ duration: 0.15 }}
-      />
-      <motion.div
-        className="cursor-glow"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "calc(-50% + 4px)",
-          translateY: "calc(-50% + 4px)",
-        }}
-        animate={{
-          width: isHovering ? 80 : 320,
-          height: isHovering ? 80 : 320,
-          backgroundColor: isHovering ? "rgba(199, 255, 77, 0.4)" : "var(--accent-soft)",
-          opacity: isHovering ? 0.6 : 0.8,
-          border: isHovering ? "1px solid var(--accent)" : "none"
-        }}
-        transition={{ duration: 0.3 }}
-      />
-    </>
-  )
-}
-
-export default App
+export default App;
