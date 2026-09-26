@@ -70,6 +70,48 @@ function Reveal({
   );
 }
 
+function DwijAvatar() {
+  return (
+    <svg
+      className="dwij-avatar"
+      viewBox="0 0 420 330"
+      role="img"
+      aria-label="Illustrated avatar of Dwij Kansagara"
+    >
+      <defs>
+        <linearGradient id="avatar-bg" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#242a20" />
+          <stop offset="1" stopColor="#11130f" />
+        </linearGradient>
+      </defs>
+      <rect width="420" height="330" rx="28" fill="url(#avatar-bg)" />
+      <circle cx="350" cy="58" r="74" fill="var(--accent)" opacity=".12" />
+      <path d="M-20 300c91-80 173-83 260-23 64 44 130 39 202-9v83H-20Z" fill="var(--accent)" opacity=".14" />
+      <g className="avatar-body">
+        <path d="M102 330c8-80 50-116 108-116s101 36 109 116Z" fill="#d3f36b" />
+        <path d="M170 211h80v54c-20 22-59 22-80 0Z" fill="#a96849" />
+      </g>
+      <g className="avatar-head">
+        <path d="M131 103c2-61 37-86 82-86 51 0 85 30 84 91l-9 87c-6 48-37 74-78 74-42 0-72-28-77-76Z" fill="#b97855" />
+        <path d="M126 123c-8-44 1-91 42-109 40-18 96-8 121 31 15 23 10 62 2 81l-16-54c-32 9-71 0-91-15-4 27-23 51-58 66Z" fill="#171914" />
+        <path d="M141 79c18-51 93-70 137-24-39-18-96-5-137 24Z" fill="#2b2e27" />
+        <path d="M148 130h53c7 0 12 5 12 12v24c0 7-5 12-12 12h-42c-9 0-16-6-17-15l-3-22c-1-6 3-11 9-11Zm124 0h-53c-7 0-12 5-12 12v24c0 7 5 12 12 12h42c9 0 16-6 17-15l3-22c1-6-3-11-9-11Z" fill="#eef0e8" fillOpacity=".16" stroke="#10120f" strokeWidth="8" />
+        <path d="M210 145h8" stroke="#10120f" strokeWidth="7" strokeLinecap="round" />
+        <g className="avatar-eyes" fill="#10120f">
+          <ellipse cx="177" cy="151" rx="7" ry="9" />
+          <ellipse cx="244" cy="151" rx="7" ry="9" />
+        </g>
+        <path d="M211 154c-4 13-6 25-2 31 3 4 8 5 14 2" fill="none" stroke="#8d533d" strokeWidth="5" strokeLinecap="round" />
+        <path d="M189 208c14 9 31 9 45 0" fill="none" stroke="#713b36" strokeWidth="6" strokeLinecap="round" />
+      </g>
+      <g className="avatar-spark" fill="none" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round">
+        <path d="M335 109v28m-14-14h28m-24-10 20 20m0-20-20 20" />
+      </g>
+      <text x="25" y="42" fill="#eef0e8" fontSize="12" fontFamily="monospace" letterSpacing="3">DWIJ / DRAWN IN CODE</text>
+    </svg>
+  );
+}
+
 function DwijMascot() {
   return (
     <svg
@@ -655,12 +697,9 @@ function App() {
               <small>Still growing in code.</small>
             </div>
             <div className="bento-card bento-photo">
-              <img
-                src="/dwij-portrait.jpeg"
-                alt="Dwij Kansagara wearing glasses"
-              />
+              <DwijAvatar />
               <span className="bento-photo-label mono">
-                A HUMAN, IN THE LOOP
+                A HUMAN, DRAWN IN CODE
               </span>
             </div>
             <div className="bento-card bento-fact">
