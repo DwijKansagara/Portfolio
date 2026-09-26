@@ -14,23 +14,19 @@ import {
   Users,
   BookOpen,
   UserPlus,
-  GitBranch
+  GitBranch,
+  RefreshCw,
+  Star
 } from "lucide-react"
 import "./App.css"
 
 import { projects, skills } from "./portfolio"
 import PortfolioAssistant from "./PortfolioAssistant"
-
-type GitHubProfile = {
-  login: string
-  avatar_url: string
-  html_url: string
-  name: string | null
-  bio: string | null
-  public_repos: number
-  followers: number
-  following: number
-}
+import {
+  fetchGitHubActivity,
+  formatUpdatedDate,
+  type GitHubActivity
+} from "./liveActivity"
 
 function App() {
   const [dark, setDark] = useState(() => {
@@ -43,10 +39,10 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
 
-  const [githubProfile, setGithubProfile] =
-    useState<GitHubProfile | null>(null)
-
+  const [githubActivity, setGithubActivity] =
+    useState<GitHubActivity | null>(null)
   const [githubLoading, setGithubLoading] = useState(true)
+  const [githubRefreshing, setGithubRefreshing] = useState(false)
 
   const nameRef = useRef<HTMLHeadingElement>(null)
 
@@ -84,27 +80,34 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const fetchGithubProfile = async () => {
+    const controller = new AbortController()
+
+    const refreshGithub = async (background = false) => {
+      if (background) setGithubRefreshing(true)
+
       try {
-        const response = await fetch(
-          "https://api.github.com/users/DwijKansagara"
-        )
-
-        if (!response.ok) {
-          throw new Error("Could not fetch GitHub profile")
+        const activity = await fetchGitHubActivity(controller.signal)
+        setGithubActivity(activity)
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Failed to fetch GitHub activity.")
         }
-
-        const data = await response.json()
-
-        setGithubProfile(data)
-      } catch {
-        console.error("Failed to fetch GitHub profile data.")
       } finally {
         setGithubLoading(false)
+        setGithubRefreshing(false)
       }
     }
 
-    fetchGithubProfile()
+    void refreshGithub()
+    const interval = window.setInterval(
+      () => void refreshGithub(true),
+      10 * 60 * 1000
+    )
+
+    return () => {
+      controller.abort()
+      window.clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
@@ -567,7 +570,8 @@ function App() {
                   FETCHING GITHUB PROFILE...
                 </span>
               </div>
-            ) : githubProfile ? (
+            ) : githubActivity ? (
+              <div className="github-live-stack">
               <motion.div
                 className="github-card"
                 initial={{ opacity: 0, y: 40 }}
@@ -578,7 +582,7 @@ function App() {
                 <div className="github-profile-top">
                   <div className="github-avatar-wrap">
                     <img
-                      src={githubProfile.avatar_url}
+                      src={githubActivity.profile.avatar_url}
                       alt="Dwij GitHub profile"
                       className="github-avatar"
                     />
@@ -592,22 +596,22 @@ function App() {
 
                       <span>
                         @
-                        {githubProfile.login}
+                        {githubActivity.profile.login}
                       </span>
                     </div>
 
                     <h3>
-                      {githubProfile.name || "Dwij"}
+                      {githubActivity.profile.name || "Dwij"}
                     </h3>
 
                     <p>
-                      {githubProfile.bio ||
+                      {githubActivity.profile.bio ||
                         "Developer · AI Enthusiast · Builder"}
                     </p>
                   </div>
 
                   <a
-                    href={githubProfile.html_url}
+                    href={githubActivity.profile.html_url}
                     target="_blank"
                     rel="noreferrer"
                     className="github-visit"
@@ -622,7 +626,7 @@ function App() {
                     <BookOpen size={19} />
 
                     <strong>
-                      {githubProfile.public_repos}
+                      {githubActivity.profile.public_repos}
                     </strong>
 
                     <span>PUBLIC REPOS</span>
@@ -632,7 +636,7 @@ function App() {
                     <Users size={19} />
 
                     <strong>
-                      {githubProfile.followers}
+                      {githubActivity.profile.followers}
                     </strong>
 
                     <span>FOLLOWERS</span>
@@ -642,7 +646,7 @@ function App() {
                     <UserPlus size={19} />
 
                     <strong>
-                      {githubProfile.following}
+                      {githubActivity.profile.following}
                     </strong>
 
                     <span>FOLLOWING</span>
@@ -650,8 +654,12 @@ function App() {
                 </div>
 
                 <div className="github-card-footer">
-                  <span>
-                    LIVE DATA FROM GITHUB
+                  <span className="github-refresh-status">
+                    <RefreshCw
+                      size={13}
+                      className={githubRefreshing ? "is-refreshing" : ""}
+                    />
+                    AUTO-REFRESHED FROM GITHUB
                   </span>
 
                   <a
@@ -664,6 +672,87 @@ function App() {
                   </a>
                 </div>
               </motion.div>
+
+              <div className="github-repositories">
+                <div className="live-feed-heading">
+                  <div>
+                    <span>LIVE REPOSITORIES</span>
+                    <h3>Recently updated</h3>
+                  </div>
+
+                  <span>
+                    SYNCED {githubActivity.refreshedAt.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    })}
+                  </span>
+                </div>
+
+                <div className="github-repo-grid">
+                  {githubActivity.repositories.map(repository => (
+                    <a
+                      className="github-repo"
+                      href={repository.html_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      key={repository.id}
+                    >
+                      <div className="github-repo-top">
+                        <GitBranch size={17} />
+                        <ArrowUpRight size={17} />
+                      </div>
+
+                      <h4>{repository.name}</h4>
+                      <p>
+                        {repository.description ||
+                          "Open-source project on GitHub."}
+                      </p>
+
+                      <div className="github-repo-meta">
+                        <span>{repository.language || "Project"}</span>
+                        <span>
+                          <Star size={12} /> {repository.stargazers_count}
+                        </span>
+                        <span>{formatUpdatedDate(repository.updated_at)}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <div className="social-live" aria-labelledby="social-live-title">
+                <div className="social-live-copy">
+                  <span className="section-index">SOCIAL / INSTAGRAM</span>
+                  <h3 id="social-live-title">
+                    Follow the
+                    <br />
+                    <span>process.</span>
+                  </h3>
+                  <p>
+                    Experiments, progress and moments beyond the code live on
+                    my official Instagram profile.
+                  </p>
+                  <a
+                    href="https://www.instagram.com/dwij.kansagara/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    OPEN @DWIJ.KANSAGARA
+                    <ArrowUpRight size={16} />
+                  </a>
+                </div>
+
+                <div className="instagram-profile-art" aria-hidden="true">
+                  <div className="instagram-orbit instagram-orbit-one" />
+                  <div className="instagram-orbit instagram-orbit-two" />
+                  <span className="instagram-monogram">IG</span>
+                  <div>
+                    <strong>@dwij.kansagara</strong>
+                    <span>VIEW CURRENT PROFILE ↗</span>
+                  </div>
+                </div>
+              </div>
+              </div>
             ) : (
               <div className="github-error">
                 <GitBranch size={28} />
