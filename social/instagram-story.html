@@ -7,157 +7,22 @@
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; }
-    body {
-      background: #10120f;
-      color: #f2f3ea;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    .story {
-      position: relative;
-      width: 1080px;
-      height: 1920px;
-      padding: 104px 84px 88px;
-      overflow: hidden;
-      isolation: isolate;
-    }
-    .story::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -2;
-      opacity: .12;
-      background-image: radial-gradient(#f2f3ea 1.2px, transparent 1.2px);
-      background-size: 26px 26px;
-    }
-    .rail {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 22px;
-      height: 100%;
-      background: #d3f36b;
-    }
-    .topline, .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: "Courier New", monospace;
-      font-size: 21px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      font-size: 28px;
-    }
-    .mark {
-      display: grid;
-      place-items: center;
-      width: 62px;
-      height: 62px;
-      background: #d3f36b;
-      color: #10120f;
-      border: 3px solid #10120f;
-      outline: 2px solid #d3f36b;
-      font: 900 30px/1 Arial, sans-serif;
-    }
-    .status { color: #d3f36b; }
-    .status::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 12px; background: #d3f36b; }
-    .hero { margin-top: 158px; }
-    .eyebrow {
-      margin: 0 0 28px;
-      color: #a9aea1;
-      font: 700 22px/1.4 "Courier New", monospace;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-    h1 {
-      max-width: 900px;
-      margin: 0;
-      font-size: 103px;
-      line-height: .94;
-      letter-spacing: -.065em;
-      text-transform: uppercase;
-    }
-    h1 em {
-      display: block;
-      margin-top: 16px;
-      color: #d3f36b;
-      font-family: Georgia, "Times New Roman", serif;
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: -.055em;
-    }
-    .rule { width: 100%; height: 2px; margin: 76px 0 46px; background: #555b50; }
-    .projects { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-    .project {
-      min-height: 278px;
-      padding: 28px 24px;
-      border: 2px solid #555b50;
-      background: #171a16;
-    }
-    .project.featured { border-color: #d3f36b; background: #d3f36b; color: #10120f; }
-    .project .number { font: 700 18px/1 "Courier New", monospace; }
-    .project h2 { margin: 92px 0 12px; font-size: 27px; line-height: 1; letter-spacing: -.04em; }
-    .project p { margin: 0; color: #a9aea1; font: 700 15px/1.45 "Courier New", monospace; text-transform: uppercase; }
-    .project.featured p { color: #34401f; }
-    .signal {
-      position: absolute;
-      right: 84px;
-      bottom: 292px;
-      width: 280px;
-      height: 176px;
-      border: 2px solid #555b50;
-      background: #10120f;
-      overflow: hidden;
-    }
-    .signal span { position: absolute; bottom: 26px; width: 15px; background: #d3f36b; }
-    .signal span:nth-child(1) { left: 32px; height: 34px; }
-    .signal span:nth-child(2) { left: 64px; height: 79px; }
-    .signal span:nth-child(3) { left: 96px; height: 118px; }
-    .signal span:nth-child(4) { left: 128px; height: 62px; }
-    .signal span:nth-child(5) { left: 160px; height: 102px; }
-    .signal span:nth-child(6) { left: 192px; height: 48px; }
-    .signal span:nth-child(7) { left: 224px; height: 132px; }
-    .release { position: absolute; left: 84px; bottom: 278px; }
-    .release small { display: block; color: #a9aea1; font: 700 18px/1.4 "Courier New", monospace; letter-spacing: .1em; text-transform: uppercase; }
-    .release strong { display: block; max-width: 520px; margin-top: 14px; font-size: 58px; line-height: .98; letter-spacing: -.045em; text-transform: uppercase; }
-    .footer { position: absolute; left: 84px; right: 84px; bottom: 88px; padding-top: 30px; border-top: 2px solid #555b50; }
-    .handle { color: #d3f36b; }
+    body { background: #10120f; color: #f2f3ea; font-family: Arial, Helvetica, sans-serif; }
+    main { position: relative; width: 1080px; height: 1920px; padding: 100px 84px 90px; border-right: 22px solid #d3f36b; }
+    header { display: flex; align-items: center; gap: 20px; font: 700 23px/1 "Courier New", monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .mark { display: grid; place-items: center; width: 70px; height: 70px; background: #d3f36b; color: #10120f; font: 900 32px/1 Arial, sans-serif; }
+    section { position: absolute; top: 50%; left: 84px; right: 84px; transform: translateY(-50%); }
+    .label { margin: 0 0 34px; color: #d3f36b; font: 700 22px/1 "Courier New", monospace; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { max-width: 880px; margin: 0; font-size: 126px; line-height: .92; letter-spacing: -.065em; text-transform: uppercase; }
+    h1 em { display: block; margin-top: 22px; color: #d3f36b; font-family: Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -.05em; text-transform: none; }
+    footer { position: absolute; left: 84px; right: 84px; bottom: 90px; padding-top: 30px; border-top: 2px solid #555b50; color: #d3f36b; font: 700 23px/1.35 "Courier New", monospace; letter-spacing: .025em; }
   </style>
 </head>
 <body>
-  <main class="story" aria-label="Promotional story for Dwij Kansagara's developer portfolio">
-    <div class="rail" aria-hidden="true"></div>
-    <header class="topline">
-      <div class="brand"><span class="mark">d*</span><span>Dwij Kansagara</span></div>
-      <span class="status">Building in public</span>
-    </header>
-
-    <section class="hero">
-      <p class="eyebrow">Student developer / Rajkot, India</p>
-      <h1>Web interfaces,<em>local AI tools,</em>and robotics.</h1>
-    </section>
-
-    <div class="rule" aria-hidden="true"></div>
-
-    <section class="projects" aria-label="Selected projects">
-      <article class="project featured"><span class="number">01</span><h2>LUMINA AI</h2><p>Audio interaction prototype</p></article>
-      <article class="project"><span class="number">02</span><h2>J.A.R.V.I.S.</h2><p>Voice and desktop assistant</p></article>
-      <article class="project"><span class="number">03</span><h2>INTERFACE STUDY</h2><p>Cinematic web experiment</p></article>
-    </section>
-
-    <section class="release">
-      <small>New portfolio</small>
-      <strong>Release<br />coming soon.</strong>
-    </section>
-
-    <div class="signal" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-
-    <footer class="footer"><span class="handle">@dwij.kansagara</span><span>React / Python / Robotics</span></footer>
+  <main aria-label="Dwij Kansagara portfolio launch story">
+    <header><span class="mark">d*</span><span>Dwij Kansagara</span></header>
+    <section><p class="label">Now live</p><h1>My portfolio<em>is online.</em></h1></section>
+    <footer>dwij-portfolio.antideploy.com</footer>
   </main>
 </body>
 </html>
