@@ -1371,6 +1371,13 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 100px;
 }
+@media (min-width: 801px) {
+  .journey-layout > :first-child {
+    position: sticky;
+    top: 120px;
+    align-self: start;
+  }
+}
 .journey-layout h2 {
   font-size: clamp(38px, 4vw, 58px);
 }
@@ -1382,8 +1389,20 @@ h2 {
   margin-top: 25px;
 }
 .timeline {
+  position: relative;
   padding-left: 20px;
   padding-top: 8px;
+}
+.timeline-progress {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  bottom: 8px;
+  left: 20px;
+  width: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 42%, transparent);
+  transform-origin: top;
 }
 #journey {
   margin-block: 82px;
@@ -1407,6 +1426,7 @@ h2 {
   top: 0;
   width: 9px;
   height: 9px;
+  z-index: 3;
   border: 1px solid var(--muted);
   background: var(--bg);
   border-radius: 50%;

@@ -270,6 +270,7 @@ function App() {
   const [time, setTime] = useState("");
   const palette = useRef<HTMLDialogElement>(null);
   const terminalBody = useRef<HTMLDivElement>(null);
+  const journeyRef = useRef<HTMLElement>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const soundEnabledRef = useRef(true);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -278,6 +279,14 @@ function App() {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const { scrollYProgress: journeyProgress } = useScroll({
+    target: journeyRef,
+    offset: ["start 75%", "end 45%"],
+  });
+  const journeyScale = useSpring(journeyProgress, {
+    stiffness: 90,
+    damping: 26,
+  });
 
   useEffect(() => {
     document.documentElement.dataset.theme = light ? "light" : "dark";
@@ -1091,7 +1100,7 @@ function App() {
               </form>
             </Reveal>
           </section>
-          <section id="journey" className="section wrap">
+          <section id="journey" className="section wrap" ref={journeyRef}>
             <div className="journey-layout">
               <Reveal>
                 <span className="section-label mono">05 / NEVER FINISHED</span>
@@ -1106,6 +1115,11 @@ function App() {
                 </p>
               </Reveal>
               <div className="timeline">
+                <motion.span
+                  className="timeline-progress"
+                  aria-hidden="true"
+                  style={{ scaleY: reduced ? 1 : journeyScale }}
+                />
                 {[
                   {
                     label: "THE FOUNDATION",
