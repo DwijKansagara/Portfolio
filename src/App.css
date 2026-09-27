@@ -1462,6 +1462,49 @@ h2 {
   margin: 24px 0;
   font-size: 10px;
 }
+.github-profile-card {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) minmax(260px, auto) auto;
+  gap: 22px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  transition: border-color 0.25s, background 0.25s;
+}
+.github-profile-card:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--surface) 90%, var(--accent));
+}
+.github-profile-mark {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-dark);
+  font-size: 18px;
+  font-weight: 850;
+}
+.github-profile-card strong,
+.github-profile-card small {
+  display: block;
+}
+.github-profile-card strong {
+  font-size: 16px;
+  font-weight: 650;
+}
+.github-profile-card small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.github-profile-focus {
+  color: var(--muted);
+  font-size: 9px;
+}
 .repo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1473,11 +1516,13 @@ h2 {
   padding: 24px;
   transition:
     background 0.25s,
-    border-color 0.25s;
+    border-color 0.25s,
+    box-shadow 0.25s;
 }
 .repo-card:hover {
   background: var(--surface);
   border-color: var(--accent);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--bg) 70%, transparent);
 }
 .repo-card > div {
   display: flex;
@@ -2210,6 +2255,12 @@ h2 {
   .repo-grid {
     grid-template-columns: 1fr;
   }
+  .github-profile-card {
+    grid-template-columns: auto 1fr auto;
+  }
+  .github-profile-focus {
+    grid-column: 2 / -1;
+  }
   .repo-card p {
     min-height: 0;
   }
@@ -2563,6 +2614,15 @@ h2 {
   }
   .github-status > span {
     width: 100%;
+  }
+  .github-profile-card {
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    padding: 18px;
+  }
+  .github-profile-focus {
+    grid-column: 1 / -1;
+    line-height: 1.6;
   }
   .contact-section {
     padding-top: 55px;

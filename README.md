@@ -16,7 +16,7 @@ npm run build
 npm run preview
 ```
 
-Deploy the generated `dist/` directory to a static host only after a custom domain and its production canonical URL are configured. The current `base: '/'` expects deployment at the domain root.
+The production site is published at `https://dwij-portfolio.antideploy.com`. Deploy the generated `dist/` directory at the domain root; the canonical metadata uses that production address.
 
 ## Visual direction
 

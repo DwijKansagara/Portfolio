@@ -1154,14 +1154,39 @@ function App() {
             <div className="github-status mono">
               STATIC PROJECT LINKS. NO AUTOMATIC GITHUB TRACKING REQUEST.
             </div>
+            <motion.a
+              className="github-profile-card"
+              href="https://github.com/DwijKansagara"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: reduced ? 0 : 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+            >
+              <span className="github-profile-mark" aria-hidden="true">d*</span>
+              <span>
+                <strong>Dwij Kansagara</strong>
+                <small>@DwijKansagara / Rajkot, Gujarat</small>
+              </span>
+              <span className="github-profile-focus mono">
+                WEB INTERFACES / LOCAL AI TOOLS / ROBOTICS
+              </span>
+              <ArrowUpRight size={20} />
+            </motion.a>
             <div className="repo-grid">
-              {projects.map((project) => (
-                <a
+              {projects.map((project, index) => (
+                <motion.a
                   className="repo-card"
                   key={project.title}
                   href={project.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: reduced ? 0 : 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  whileHover={reduced ? undefined : { y: -4 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: index * 0.06 }}
                 >
                   <div>
                     <Github size={19} />
@@ -1172,7 +1197,7 @@ function App() {
                   <span className="mono">
                     SOURCE REPOSITORY <span>{project.tags.join(" / ")}</span>
                   </span>
-                </a>
+                </motion.a>
               ))}
             </div>
           </section>
