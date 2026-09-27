@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="docs/portfolio-banner.svg" alt="Dwij Kansagara developer portfolio" width="100%" />
+</div>
+
 # Dwij Kansagara: developer portfolio
 
 A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
