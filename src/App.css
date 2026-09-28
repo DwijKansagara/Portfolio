@@ -1725,6 +1725,13 @@ h2 {
 .contact-compose form > .button {
   justify-self: start;
 }
+dwij-engagement {
+  --engagement-accent: var(--accent);
+  --engagement-panel: var(--surface-solid);
+  --engagement-ink: var(--text);
+  --engagement-button-ink: #10120f;
+}
+
 .footer {
   padding: 30px 0 95px;
   display: flex;

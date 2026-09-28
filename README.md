@@ -46,6 +46,9 @@ System sans-serif fonts provide the interface structure, Georgia supplies editor
 6. A learning timeline without fabricated employers, dates, or metrics.
 7. Static project links to the public source repositories, with no automatic GitHub API request.
 8. Contact, clipboard action, email-draft composer, and verified existing social links.
+9. A persistent anonymous visit counter and 20-step appreciation meter, with no cookies or browser identifier.
+
+Privacy, terms, cookie, and refund pages describe the site's actual behavior. The contact composer requires explicit consent before it prepares an email draft. The shared counter source lives in `services/engagement/`.
 
 ## Motion and interaction
 
@@ -88,3 +91,4 @@ Browser QA covers desktop and mobile rendering, filters, terminal commands, comm
 - https://linear.app/: restrained product presentation and surface hierarchy.
 - https://motion.dev/docs/react-accessibility: reduced-motion implementation.
 - https://vite.dev/guide/static-deploy.html: production static-build workflow.
+

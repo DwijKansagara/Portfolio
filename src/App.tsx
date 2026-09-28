@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createElement, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   motion,
   MotionConfig,
@@ -1340,6 +1340,7 @@ function App() {
             </Reveal>
           </section>
         </main>
+        {createElement("dwij-engagement", { site: "portfolio" })}
         <footer className="footer wrap">
           <a className="brand" href="#home">
             dwij<span aria-hidden="true">*</span>
