@@ -1,5 +1,5 @@
 (() => {
-  const endpoint = "https://dwij-portfolio.antideploy.com/api/engagement";
+  const endpoint = "https://dwij-signal.vercel.app/api/engagement";
   class DwijEngagement extends HTMLElement {
     connectedCallback() {
       if (this.shadowRoot) return;

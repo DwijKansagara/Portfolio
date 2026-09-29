@@ -127,7 +127,7 @@ app.use((req, res, next) => {
     "Content-Security-Policy": [
       "default-src 'self'",
       "base-uri 'self'",
-      "connect-src 'self' https://huggingface.co https://*.hf.co https://github.com https://raw.githubusercontent.com",
+      "connect-src 'self' https://dwij-signal.vercel.app https://huggingface.co https://*.hf.co https://github.com https://raw.githubusercontent.com",
       "font-src 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
