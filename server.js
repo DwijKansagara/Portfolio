@@ -114,12 +114,25 @@ app.set("trust proxy", 1);
 app.use(express.json({ limit: "4kb" }));
 app.use((req, res, next) => {
   res.set({
+    "Content-Security-Policy": [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "connect-src 'self'",
+      "font-src 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "img-src 'self' data:",
+      "object-src 'none'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+    ].join("; "),
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "Cross-Origin-Resource-Policy": "cross-origin",
     "X-Permitted-Cross-Domain-Policies": "none",
     "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), geolocation=(self), microphone=(), payment=()",
   });
   next();
 });
