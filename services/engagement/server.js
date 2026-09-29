@@ -98,6 +98,16 @@ async function readStats(client, site, visitorHash) {
   return result.rows[0];
 }
 
+async function readTotals(client, site) {
+  const result = await client.query(
+    `SELECT
+      (SELECT COUNT(*)::int FROM engagement_visitors WHERE site = $1) AS visitors,
+      (SELECT COALESCE(SUM(clicks), 0)::int FROM engagement_reactions WHERE site = $1) AS likes`,
+    [site],
+  );
+  return result.rows[0];
+}
+
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -190,6 +200,31 @@ app.post("/api/engagement/:site/like", async (req, res) => {
 
 app.get("/", (_req, res) => {
   res.type("text/plain").send("Dwij engagement service");
+});
+
+app.get("/badge/:site.svg", async (req, res) => {
+  const { site } = req.params;
+  if (!allowedSites.has(site)) return res.sendStatus(404);
+  if (!pool) return res.sendStatus(503);
+  try {
+    const { visitors, likes } = await readTotals(pool, site);
+    const viewsText = `${Number(visitors).toLocaleString("en-IN")} views`;
+    const likesText = `${Number(likes).toLocaleString("en-IN")} likes`;
+    res.set({
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+    });
+    return res.send(`<svg xmlns="http://www.w3.org/2000/svg" width="214" height="30" viewBox="0 0 214 30" role="img" aria-label="${viewsText}, ${likesText}">
+      <rect width="214" height="30" rx="6" fill="#11140f"/>
+      <circle cx="15" cy="15" r="4" fill="#b8e34f"/>
+      <text x="27" y="19" fill="#eef2e8" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">${viewsText}</text>
+      <path d="M112 9.3c-4-3.5-10 2-6.6 6.5 1.8 2.4 6.6 5.4 6.6 5.4s4.8-3 6.6-5.4c3.4-4.5-2.6-10-6.6-6.5Z" fill="#b8e34f"/>
+      <text x="126" y="19" fill="#eef2e8" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">${likesText}</text>
+    </svg>`);
+  } catch (error) {
+    console.error("badge render failed", error);
+    return res.sendStatus(503);
+  }
 });
 
 app.use(

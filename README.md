@@ -4,6 +4,8 @@
 
 # Dwij Kansagara: developer portfolio
 
+<img src="https://dwij-counts.antideploy.com/badge/portfolio.svg" alt="Portfolio views and likes" width="214" />
+
 A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
 
 ## Run
