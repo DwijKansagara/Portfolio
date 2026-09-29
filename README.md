@@ -48,7 +48,7 @@ System sans-serif fonts provide the interface structure, Georgia supplies editor
 6. A learning timeline without fabricated employers, dates, or metrics.
 7. Static project links to the public source repositories, with no automatic GitHub API request.
 8. Contact, clipboard action, email-draft composer, and verified existing social links.
-9. A persistent anonymous visit counter and 20-step appreciation meter, with no cookies or browser identifier.
+9. An aggregate view counter and a 20-step appreciation meter that remembers progress with a random, site-specific browser value only after interaction.
 
 Privacy, terms, cookie, and refund pages describe the site's actual behavior. The contact composer requires explicit consent before it prepares an email draft. The shared counter source lives in `services/engagement/`.
 

@@ -57,6 +57,15 @@ async function ensureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       PRIMARY KEY (site, visitor_hash)
     );
+
+    CREATE TABLE IF NOT EXISTS engagement_views (
+      site TEXT PRIMARY KEY,
+      views BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0)
+    );
+
+    INSERT INTO engagement_views (site, views)
+    SELECT site, COUNT(*) FROM engagement_visitors GROUP BY site
+    ON CONFLICT (site) DO NOTHING;
   `);
   await pool.query(
     `INSERT INTO engagement_config (key, value)
@@ -70,8 +79,9 @@ async function ensureSchema() {
 }
 
 function visitorHash(req, site) {
-  const fingerprint = `${site}\n${req.ip || "unknown"}\n${req.get("user-agent") || "unknown"}`;
-  return crypto.createHmac("sha256", visitorSalt).update(fingerprint).digest("hex");
+  const browserId = req.get("x-dwij-visitor") || "";
+  if (!/^[a-f0-9-]{32,64}$/i.test(browserId)) return null;
+  return crypto.createHmac("sha256", visitorSalt).update(`${site}\n${browserId}`).digest("hex");
 }
 
 function setCors(req, res) {
@@ -83,14 +93,14 @@ function setCors(req, res) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Vary", "Origin");
   }
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  res.set("Access-Control-Allow-Headers", "Content-Type, X-Dwij-Visitor");
   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 }
 
 async function readStats(client, site, visitorHash) {
   const result = await client.query(
     `SELECT
-      (SELECT COUNT(*)::int FROM engagement_visitors WHERE site = $1) AS visitors,
+      COALESCE((SELECT views::int FROM engagement_views WHERE site = $1), 0) AS visitors,
       (SELECT COALESCE(SUM(clicks), 0)::int FROM engagement_reactions WHERE site = $1) AS likes,
       COALESCE((SELECT clicks FROM engagement_reactions WHERE site = $1 AND visitor_hash = $2), 0)::int AS "yourClicks"`,
     [site, visitorHash],
@@ -101,7 +111,7 @@ async function readStats(client, site, visitorHash) {
 async function readTotals(client, site) {
   const result = await client.query(
     `SELECT
-      (SELECT COUNT(*)::int FROM engagement_visitors WHERE site = $1) AS visitors,
+      COALESCE((SELECT views::int FROM engagement_views WHERE site = $1), 0) AS visitors,
       (SELECT COALESCE(SUM(clicks), 0)::int FROM engagement_reactions WHERE site = $1) AS likes`,
     [site],
   );
@@ -117,7 +127,7 @@ app.use((req, res, next) => {
     "Content-Security-Policy": [
       "default-src 'self'",
       "base-uri 'self'",
-      "connect-src 'self'",
+      "connect-src 'self' https://huggingface.co https://*.hf.co https://github.com https://raw.githubusercontent.com",
       "font-src 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
@@ -125,6 +135,7 @@ app.use((req, res, next) => {
       "object-src 'none'",
       "script-src 'self'",
       "style-src 'self' 'unsafe-inline'",
+      "worker-src 'self' blob:",
     ].join("; "),
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -154,18 +165,37 @@ app.get("/api/engagement/:site", async (req, res) => {
   }
   try {
     const hash = visitorHash(req, site);
-    const privacySignal = req.get("sec-gpc") === "1" || req.get("dnt") === "1";
-    if (!privacySignal) {
-      await pool.query(
-        `INSERT INTO engagement_visitors (site, visitor_hash)
-         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [site, hash],
-      );
-    }
     return res.json(await readStats(pool, site, hash));
   } catch (error) {
     console.error("engagement read failed", error);
     return res.status(503).json({ error: "Engagement service is temporarily unavailable." });
+  }
+});
+
+app.post("/api/engagement/:site/view", async (req, res) => {
+  setCors(req, res);
+  res.set("Cache-Control", "no-store");
+  const { site } = req.params;
+  if (!allowedSites.has(site)) {
+    return res.status(400).json({ error: "Invalid engagement request." });
+  }
+  if (!pool) {
+    return res.status(503).json({ error: "Engagement service is not configured." });
+  }
+  try {
+    const hash = visitorHash(req, site);
+    const privacySignal = req.get("sec-gpc") === "1" || req.get("dnt") === "1";
+    if (!privacySignal) {
+      await pool.query(
+        `INSERT INTO engagement_views (site, views) VALUES ($1, 1)
+         ON CONFLICT (site) DO UPDATE SET views = engagement_views.views + 1`,
+        [site],
+      );
+    }
+    return res.json(await readStats(pool, site, hash));
+  } catch (error) {
+    console.error("engagement view failed", error);
+    return res.status(503).json({ error: "The view could not be counted." });
   }
 });
 
@@ -182,12 +212,10 @@ app.post("/api/engagement/:site/like", async (req, res) => {
   const client = await pool.connect();
   try {
     const hash = visitorHash(req, site);
+    if (!hash) {
+      return res.status(400).json({ error: "A browser reaction identifier is required." });
+    }
     await client.query("BEGIN");
-    await client.query(
-      `INSERT INTO engagement_visitors (site, visitor_hash)
-       VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [site, hash],
-    );
     await client.query(
       `INSERT INTO engagement_reactions (site, visitor_hash, clicks)
        VALUES ($1, $2, 1)
@@ -216,7 +244,8 @@ app.get("/badge/:site.svg", async (req, res) => {
   try {
     const { visitors, likes } = await readTotals(pool, site);
     const viewsText = `${Number(visitors).toLocaleString("en-IN")} views`;
-    const likesText = `${Number(likes).toLocaleString("en-IN")} likes`;
+    const likeCount = Number(likes);
+    const likesText = `${likeCount.toLocaleString("en-IN")} ${likeCount === 1 ? "like" : "likes"}`;
     res.set({
       "Content-Type": "image/svg+xml; charset=utf-8",
       "Cache-Control": "public, max-age=300, stale-while-revalidate=600",

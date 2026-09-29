@@ -4,21 +4,48 @@
     connectedCallback() {
       if (this.shadowRoot) return;
       this.site = this.getAttribute("site") || "portfolio";
+      this.storageKey = `dwij-engagement-${this.site}`;
+      this.visitorId = this.readVisitorId();
       this.state = { visitors: 0, likes: 0, clicks: 0, pending: 0 };
       this.attachShadow({ mode: "open" });
       this.render();
       this.button = this.shadowRoot.querySelector("button");
       this.button.addEventListener("click", () => this.like());
-      this.load();
+      this.load(true);
+    }
+    readVisitorId() {
+      try {
+        return localStorage.getItem(this.storageKey) || "";
+      } catch {
+        return "";
+      }
+    }
+    ensureVisitorId() {
+      if (this.visitorId) return this.visitorId;
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      this.visitorId = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+      try {
+        localStorage.setItem(this.storageKey, this.visitorId);
+      } catch {
+        // The in-memory ID still keeps rapid presses consistent for this page view.
+      }
+      return this.visitorId;
     }
     async request(path = "", options = {}) {
-      const response = await fetch(`${endpoint}/${this.site}${path}`, { cache: "no-store", ...options });
+      const headers = new Headers(options.headers || {});
+      if (this.visitorId) headers.set("X-Dwij-Visitor", this.visitorId);
+      const response = await fetch(`${endpoint}/${this.site}${path}`, {
+        cache: "no-store",
+        ...options,
+        headers,
+      });
       if (!response.ok) throw new Error("Counter unavailable");
       return response.json();
     }
-    async load() {
+    async load(countView = false) {
       try {
-        const stats = await this.request();
+        const stats = await this.request(countView ? "/view" : "", countView ? { method: "POST" } : {});
         if (this.state.pending === 0) {
           this.state.visitors = Number(stats.visitors) || 0;
           this.state.likes = Number(stats.likes) || 0;
@@ -31,6 +58,7 @@
     }
     like() {
       if (this.state.clicks >= 20) return;
+      this.ensureVisitorId();
       this.state.clicks += 1;
       this.state.likes += 1;
       this.state.pending += 1;
@@ -105,7 +133,7 @@
           @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
         </style>
         <section class="signal" aria-label="Live site engagement">
-          <div class="visitor"><p class="eyebrow">Live signal</p><div class="visitor-line"><strong data-visitors>—</strong><span>visitors</span></div></div>
+          <div class="visitor"><p class="eyebrow">Live signal</p><div class="visitor-line"><strong data-visitors>—</strong><span>views</span></div></div>
           <div class="meter">
             <div class="meter-head"><strong>Appreciation signal</strong><span class="totals"><b data-likes>—</b> total presses</span></div>
             <div class="segments" role="progressbar" aria-label="Your appreciation signal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${segments}</div>
