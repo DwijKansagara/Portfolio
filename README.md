@@ -4,7 +4,7 @@
 
 # Dwij Kansagara: developer portfolio
 
-<img src="https://dwij-counts.antideploy.com/badge/portfolio.svg" alt="Portfolio views and likes" width="214" />
+<img src="https://dwij-portfolio.antideploy.com/badge/portfolio.svg" alt="Portfolio views and likes" width="214" />
 
 A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
 
@@ -93,4 +93,5 @@ Browser QA covers desktop and mobile rendering, filters, terminal commands, comm
 - https://linear.app/: restrained product presentation and surface hierarchy.
 - https://motion.dev/docs/react-accessibility: reduced-motion implementation.
 - https://vite.dev/guide/static-deploy.html: production static-build workflow.
+
 

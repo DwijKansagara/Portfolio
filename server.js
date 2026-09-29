@@ -117,9 +117,7 @@ app.use((req, res, next) => {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cross-Origin-Resource-Policy": "cross-origin",
-    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
     "X-Permitted-Cross-Domain-Policies": "none",
     "Referrer-Policy": "strict-origin-when-cross-origin",
   });
@@ -198,10 +196,6 @@ app.post("/api/engagement/:site/like", async (req, res) => {
   }
 });
 
-app.get("/", (_req, res) => {
-  res.type("text/plain").send("Dwij engagement service");
-});
-
 app.get("/badge/:site.svg", async (req, res) => {
   const { site } = req.params;
   if (!allowedSites.has(site)) return res.sendStatus(404);
@@ -228,7 +222,7 @@ app.get("/badge/:site.svg", async (req, res) => {
 });
 
 app.use(
-  express.static(path.join(__dirname, "public"), {
+  express.static(path.join(__dirname, "dist"), {
     extensions: ["html"],
     maxAge: process.env.NODE_ENV === "production" ? "1h" : 0,
   }),
@@ -238,5 +232,6 @@ await ensureSchema();
 app.listen(port, "0.0.0.0", () => {
   console.log(`Dwij portfolio listening on ${port}`);
 });
+
 
 

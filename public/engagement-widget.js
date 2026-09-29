@@ -1,5 +1,5 @@
 (() => {
-  const endpoint = "https://dwij-counts.antideploy.com/api/engagement";
+  const endpoint = "https://dwij-portfolio.antideploy.com/api/engagement";
   class DwijEngagement extends HTMLElement {
     connectedCallback() {
       if (this.shadowRoot) return;
@@ -118,3 +118,4 @@
   }
   if (!customElements.get("dwij-engagement")) customElements.define("dwij-engagement", DwijEngagement);
 })();
+
