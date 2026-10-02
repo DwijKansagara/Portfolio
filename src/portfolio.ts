@@ -1,5 +1,14 @@
 export const projects = [
   {
+    number: "04",
+    title: "KARBS",
+    category: "AI • WINDOWS • DESKTOP TOOLS",
+    description: "A Windows desktop assistant connecting Codex and Gemini, with reviewed desktop tools, attachments and optional voice. Adapted from MIT-licensed Coucou source with independent branding.",
+    tags: ["Rust", "TypeScript", "Desktop"],
+    link: "https://github.com/DwijKansagara/Karbs",
+    visual: "karbs"
+  },
+  {
     number: "01",
     title: "LUMINA AI",
     category: "WEB • AUDIO • INTERACTION",

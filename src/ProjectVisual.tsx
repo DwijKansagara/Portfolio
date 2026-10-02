@@ -1,4 +1,7 @@
 export function ProjectVisual({ type }: { type: string }) {
+  if (type === "karbs") {
+    return <div className="project-visual"><div className="project-art karbs-art"><svg viewBox="0 0 80 80" role="img" aria-label="Karbs K mark"><rect x="10" y="10" width="60" height="60" fill="#15221d" stroke="#9be6af" /><path d="M29 22v36m25-36L31 40l23 18" fill="none" stroke="#9be6af" strokeWidth="5"/></svg><span className="art-label">CODEX · GEMINI · DESKTOP</span></div></div>;
+  }
   if (type === "lumina") {
     return (
       <div className="project-visual">

@@ -878,7 +878,9 @@ function App() {
                     <div className="project-art-top mono">
                       <span>EXPERIMENT / {project.number}</span>
                       <span>
-                        {project.visual === "lumina"
+                        {project.visual === "karbs"
+                          ? "CODEX × GEMINI"
+                          : project.visual === "lumina"
                           ? "SOUND × GESTURE"
                           : project.visual === "jarvis"
                             ? "VOICE × INTELLIGENCE"
