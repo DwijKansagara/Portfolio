@@ -140,7 +140,7 @@
             <div class="meter-foot"><span class="status" data-status role="status">Connecting to live totals…</span><output data-clicks>0 / 20</output></div>
           </div>
           <div class="action"><button type="button" aria-label="Add five percent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.2-4.35-9.38-8.26C.75 9.38 2.26 5.5 5.86 4.67 8 4.18 10.08 5.1 12 7.13c1.92-2.03 4-2.95 6.14-2.46 3.6.83 5.11 4.71 3.24 8.07C19.2 16.65 12 21 12 21Z"/></svg><span data-button-label>Add 5%</span><span class="percent" data-percent>0%</span></button></div>
-          <a class="privacy" href="https://dwij-portfolio.antideploy.com/privacy/">Anonymous by design</a>
+          <a class="privacy" href="https://dwij-portfolio.antideploy.app/privacy/">Anonymous by design</a>
         </section>`;
     }
   }

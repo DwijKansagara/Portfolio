@@ -22,7 +22,7 @@ npm run build
 npm run preview
 ```
 
-The production site is published at `https://dwij-portfolio.antideploy.com`. Deploy the generated `dist/` directory at the domain root; the canonical metadata uses that production address.
+The production site is published at `https://dwij-portfolio.antideploy.app`. Deploy the generated `dist/` directory at the domain root; the canonical metadata uses that production address.
 
 ## Visual direction
 

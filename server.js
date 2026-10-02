@@ -16,7 +16,7 @@ const allowedSites = new Set([
   "doomsday",
 ]);
 const allowedOrigins = new Set([
-  "https://dwij-portfolio.antideploy.com",
+  "https://dwij-portfolio.antideploy.app",
   "https://about-me.antideploy.com",
   "https://dwij-jarvis.antideploy.com",
   "https://lumina.antideploy.com",
