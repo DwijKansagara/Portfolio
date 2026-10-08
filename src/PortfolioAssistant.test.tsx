@@ -36,7 +36,7 @@ describe('portfolio guide', () => {
     fireEvent.click(screen.getByRole('button', { name: /Download and enable assistant/ }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('WebGPU'))
     fireEvent.click(screen.getByRole('button', { name: 'How can I contact him?' }))
-    expect(screen.getByRole('log')).toHaveTextContent('kansagara.dwij@gmail.com')
+    expect(screen.getByRole('log')).toHaveTextContent('work.dwijkansagara@gmail.com')
     expect(screen.getByRole('textbox')).toBeDisabled()
   })
 

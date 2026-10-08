@@ -40,7 +40,7 @@ import ParticleSculpture from "./ParticleSculpture";
 import "./App.css";
 
 export { ProjectVisual } from "./ProjectVisual";
-const email = "kansagara.dwij@gmail.com";
+const email = "work.dwijkansagara@gmail.com";
 const nav = [
   ["projects", "Categories"],
   ["skills", "Courses"],
@@ -968,6 +968,15 @@ function App() {
                   </span>
                 </div>
               </Reveal>
+            </div>
+            <div className="wrap portfolio-faq" aria-labelledby="faq-title">
+              <span className="mono section-label">ABOUT THIS PORTFOLIO</span>
+              <h2 id="faq-title">Frequently asked questions</h2>
+              <div className="portfolio-faq-grid">
+                <article><h3>Who is Dwij Kansagara?</h3><p>Dwij is a 10th-standard student developer in Rajkot who builds web interfaces, browser machine-learning experiments, voice tools, and robotics projects.</p></article>
+                <article><h3>Can I view the source code?</h3><p>Yes. Every selected project links to a public GitHub repository with source code and documentation.</p></article>
+                <article><h3>How can I contact Dwij?</h3><p>Use the email link in the contact section or visit the public GitHub profile.</p></article>
+              </div>
             </div>
           </section>
           <section id="skills" className="section wrap">

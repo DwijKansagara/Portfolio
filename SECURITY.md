@@ -1,6 +1,6 @@
 # Security
 
-Report a suspected vulnerability privately to **kansagara.dwij@gmail.com**. Do not include secrets or personal data in a public issue.
+Report a suspected vulnerability privately to **work.dwijkansagara@gmail.com**. Do not include secrets or personal data in a public issue.
 
 ## Current design
 

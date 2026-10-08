@@ -3,7 +3,7 @@ import { projects, skills } from './portfolio'
 export const quickAnswers = [
   { question: 'What has Dwij built?', answer: projects.map(p => `${p.title}: ${p.description}`).join('\n\n') },
   { question: 'What are his skills?', answer: `Dwij lists ${skills.join(', ')}. He is a student and developer who learns through building and experimenting.` },
-  { question: 'How can I contact him?', answer: 'Email Dwij at kansagara.dwij@gmail.com, or explore his public work at github.com/DwijKansagara.' },
+  { question: 'How can I contact him?', answer: 'Email Dwij at work.dwijkansagara@gmail.com, or explore his public work at github.com/DwijKansagara.' },
 ]
 
 export const assistantInstructions = `You are the AI guide for Dwij Kansagara's portfolio, not Dwij himself.
@@ -16,5 +16,5 @@ FACTS:
 Dwij is a student and developer interested in AI, software, robotics, and creative technology. He learns by building and experimenting.
 Skills listed: ${skills.join(', ')}.
 Projects: ${projects.map(p => `${p.title}: ${p.description} Listed technologies: ${p.tags.join(', ')}. Repository: ${p.link}`).join('\n')}
-Contact: kansagara.dwij@gmail.com. GitHub: https://github.com/DwijKansagara.
+Contact: work.dwijkansagara@gmail.com. GitHub: https://github.com/DwijKansagara.
 END FACTS`
