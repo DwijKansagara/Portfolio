@@ -10,6 +10,8 @@ A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents
 
 **[Open the live portfolio](https://dwij-portfolio.antideploy.app)** · **[Read about Dwij](https://about-me.antideploy.com)** · **[Report a problem](https://github.com/DwijKansagara/Portfolio/issues/new/choose)**
 
+![Live portfolio preview](docs/social-preview.png)
+
 [![Build and security checks](https://github.com/DwijKansagara/Portfolio/actions/workflows/deploy.yml/badge.svg)](https://github.com/DwijKansagara/Portfolio/actions/workflows/deploy.yml)
 
 ## Run
