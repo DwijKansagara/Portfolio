@@ -8,6 +8,10 @@
 
 A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
 
+**[Open the live portfolio](https://dwij-portfolio.antideploy.app)** · **[Read about Dwij](https://about-me.antideploy.com)** · **[Report a problem](https://github.com/DwijKansagara/Portfolio/issues/new/choose)**
+
+[![Build and security checks](https://github.com/DwijKansagara/Portfolio/actions/workflows/deploy.yml/badge.svg)](https://github.com/DwijKansagara/Portfolio/actions/workflows/deploy.yml)
+
 ## Run
 
 ```sh
@@ -93,5 +97,9 @@ Browser QA covers desktop and mobile rendering, filters, terminal commands, comm
 - https://linear.app/: restrained product presentation and surface hierarchy.
 - https://motion.dev/docs/react-accessibility: reduced-motion implementation.
 - https://vite.dev/guide/static-deploy.html: production static-build workflow.
+
+## Feedback and contributions
+
+Reproducible bug reports, accessibility findings and focused improvements are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. If the project is useful or gives you an idea, a GitHub star helps other developers find it.
 
 
