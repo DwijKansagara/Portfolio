@@ -34,6 +34,7 @@
     }
     async request(path = "", options = {}) {
       const headers = new Headers(options.headers || {});
+      headers.set("X-Dwij-Site", this.site);
       if (this.visitorId) headers.set("X-Dwij-Visitor", this.visitorId);
       const response = await fetch(`${endpoint}/${this.site}${path}`, {
         cache: "no-store",

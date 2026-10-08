@@ -22,6 +22,8 @@ const allowedOrigins = new Set([
   "https://lumina.antideploy.com",
   "https://doomsday.antideploy.com",
 ]);
+const isProduction = process.env.NODE_ENV === "production";
+const localOriginPattern = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
 
 const pool = databaseUrl
   ? new Pool({
@@ -63,6 +65,14 @@ async function ensureSchema() {
       views BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0)
     );
 
+    CREATE TABLE IF NOT EXISTS engagement_rate_limits (
+      actor_hash TEXT NOT NULL,
+      action TEXT NOT NULL,
+      window_start TIMESTAMPTZ NOT NULL,
+      hits INTEGER NOT NULL DEFAULT 1 CHECK (hits > 0),
+      PRIMARY KEY (actor_hash, action, window_start)
+    );
+
     INSERT INTO engagement_views (site, views)
     SELECT site, COUNT(*) FROM engagement_visitors GROUP BY site
     ON CONFLICT (site) DO NOTHING;
@@ -76,6 +86,15 @@ async function ensureSchema() {
     `SELECT value FROM engagement_config WHERE key = 'visitor_salt'`,
   );
   visitorSalt = result.rows[0].value;
+  await pool.query(`
+    REVOKE ALL ON engagement_config, engagement_visitors, engagement_reactions,
+      engagement_views, engagement_rate_limits FROM PUBLIC;
+    ALTER TABLE engagement_config ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE engagement_visitors ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE engagement_reactions ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE engagement_views ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE engagement_rate_limits ENABLE ROW LEVEL SECURITY;
+  `);
 }
 
 function visitorHash(req, site) {
@@ -84,17 +103,56 @@ function visitorHash(req, site) {
   return crypto.createHmac("sha256", visitorSalt).update(`${site}\n${browserId}`).digest("hex");
 }
 
+function originAllowed(origin) {
+  return allowedOrigins.has(origin) || (!isProduction && localOriginPattern.test(origin));
+}
+
 function setCors(req, res) {
   const origin = req.get("origin");
-  if (
-    origin &&
-    (allowedOrigins.has(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
-  ) {
+  if (origin && originAllowed(origin)) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Vary", "Origin");
   }
-  res.set("Access-Control-Allow-Headers", "Content-Type, X-Dwij-Visitor");
+  res.set("Access-Control-Allow-Headers", "Content-Type, X-Dwij-Site, X-Dwij-Visitor");
   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+}
+
+function requireTrustedWrite(req, res, next) {
+  const origin = req.get("origin") || "";
+  if (!originAllowed(origin) || req.get("x-dwij-site") !== req.params.site) {
+    return res.status(403).json({ error: "Cross-site request rejected." });
+  }
+  return next();
+}
+
+function safeErrorCode(error) {
+  return typeof error?.code === "string" && /^[A-Z0-9_]{1,16}$/i.test(error.code)
+    ? error.code
+    : "unknown";
+}
+
+function actorHash(req) {
+  return crypto.createHmac("sha256", visitorSalt).update(String(req.ip || "unknown")).digest("hex");
+}
+
+async function enforceRateLimit(req, res, action, limit) {
+  const result = await pool.query(
+    `INSERT INTO engagement_rate_limits (actor_hash, action, window_start, hits)
+     VALUES ($1, $2, date_trunc('minute', NOW()), 1)
+     ON CONFLICT (actor_hash, action, window_start)
+     DO UPDATE SET hits = engagement_rate_limits.hits + 1
+     RETURNING hits`,
+    [actorHash(req), action],
+  );
+  if (Number(result.rows[0].hits) > limit) {
+    res.set("Retry-After", "60");
+    res.status(429).json({ error: "Too many requests. Please retry shortly." });
+    return false;
+  }
+  if (Math.random() < 0.02) {
+    void pool.query(`DELETE FROM engagement_rate_limits WHERE window_start < NOW() - INTERVAL '10 minutes'`).catch(() => undefined);
+  }
+  return true;
 }
 
 async function readStats(client, site, visitorHash) {
@@ -121,7 +179,7 @@ async function readTotals(client, site) {
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
-app.use(express.json({ limit: "4kb" }));
+app.use(express.json({ limit: "4kb", strict: true, type: "application/json" }));
 app.use((req, res, next) => {
   res.set({
     "Content-Security-Policy": [
@@ -150,6 +208,8 @@ app.use((req, res, next) => {
 
 app.options("/api/engagement/*splat", (req, res) => {
   setCors(req, res);
+  const origin = req.get("origin") || "";
+  if (!originAllowed(origin)) return res.sendStatus(403);
   res.sendStatus(204);
 });
 
@@ -167,12 +227,12 @@ app.get("/api/engagement/:site", async (req, res) => {
     const hash = visitorHash(req, site);
     return res.json(await readStats(pool, site, hash));
   } catch (error) {
-    console.error("engagement read failed", error);
+    console.error("engagement read failed", safeErrorCode(error));
     return res.status(503).json({ error: "Engagement service is temporarily unavailable." });
   }
 });
 
-app.post("/api/engagement/:site/view", async (req, res) => {
+app.post("/api/engagement/:site/view", requireTrustedWrite, async (req, res) => {
   setCors(req, res);
   res.set("Cache-Control", "no-store");
   const { site } = req.params;
@@ -183,6 +243,7 @@ app.post("/api/engagement/:site/view", async (req, res) => {
     return res.status(503).json({ error: "Engagement service is not configured." });
   }
   try {
+    if (!(await enforceRateLimit(req, res, `view:${site}`, 60))) return;
     const hash = visitorHash(req, site);
     const privacySignal = req.get("sec-gpc") === "1" || req.get("dnt") === "1";
     if (!privacySignal) {
@@ -194,12 +255,12 @@ app.post("/api/engagement/:site/view", async (req, res) => {
     }
     return res.json(await readStats(pool, site, hash));
   } catch (error) {
-    console.error("engagement view failed", error);
+    console.error("engagement view failed", safeErrorCode(error));
     return res.status(503).json({ error: "The view could not be counted." });
   }
 });
 
-app.post("/api/engagement/:site/like", async (req, res) => {
+app.post("/api/engagement/:site/like", requireTrustedWrite, async (req, res) => {
   setCors(req, res);
   res.set("Cache-Control", "no-store");
   const { site } = req.params;
@@ -211,6 +272,7 @@ app.post("/api/engagement/:site/like", async (req, res) => {
   }
   const client = await pool.connect();
   try {
+    if (!(await enforceRateLimit(req, res, `like:${site}`, 40))) return;
     const hash = visitorHash(req, site);
     if (!hash) {
       return res.status(400).json({ error: "A browser reaction identifier is required." });
@@ -229,8 +291,8 @@ app.post("/api/engagement/:site/like", async (req, res) => {
     await client.query("COMMIT");
     return res.json(stats);
   } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("engagement write failed", error);
+    await client.query("ROLLBACK").catch(() => undefined);
+    console.error("engagement write failed", safeErrorCode(error));
     return res.status(503).json({ error: "The reaction could not be saved." });
   } finally {
     client.release();
@@ -249,6 +311,7 @@ app.get("/badge/:site.svg", async (req, res) => {
     res.set({
       "Content-Type": "image/svg+xml; charset=utf-8",
       "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
     });
     return res.send(`<svg xmlns="http://www.w3.org/2000/svg" width="214" height="30" viewBox="0 0 214 30" role="img" aria-label="${viewsText}, ${likesText}">
       <rect width="214" height="30" rx="6" fill="#11140f"/>
@@ -258,7 +321,7 @@ app.get("/badge/:site.svg", async (req, res) => {
       <text x="126" y="19" fill="#eef2e8" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="600">${likesText}</text>
     </svg>`);
   } catch (error) {
-    console.error("badge render failed", error);
+    console.error("badge render failed", safeErrorCode(error));
     return res.sendStatus(503);
   }
 });
