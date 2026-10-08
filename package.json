@@ -14,7 +14,7 @@
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.85",
     "express": "^5.2.1",
-    "framer-motion": "^13.1.1",
+    "framer-motion": "^14.0.0",
     "gsap": "^3.15.0",
     "lucide-react": "^1.37.0",
     "pg": "^8.23.1",
