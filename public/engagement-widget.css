@@ -1,0 +1,268 @@
+:host {
+  display: block;
+  max-width: 1120px;
+  margin: clamp(2.5rem, 6vw, 5rem) auto 2rem;
+  padding: 0 1.25rem;
+  color: var(--engagement-ink, #eff2e8);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+.signal {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.5fr) minmax(280px, 1.5fr) minmax(150px, 0.55fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: center;
+  padding: 1.25rem 1.35rem;
+  border-block: 1px solid color-mix(in srgb, var(--engagement-accent, #d3f36b) 26%, transparent);
+  background: color-mix(in srgb, var(--engagement-panel, #171a16) 96%, transparent);
+  border-radius: 14px;
+}
+.signal:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 64px;
+  height: 2px;
+  background: var(--engagement-accent, #d3f36b);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.7rem;
+  color: var(--engagement-accent, #d3f36b);
+  font: 750 0.66rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.eyebrow:before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 12%, transparent);
+}
+.visitor-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+.visitor-line strong {
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.visitor-line span {
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.meter-head strong {
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+.totals {
+  color: color-mix(in srgb, currentColor 60%, transparent);
+  font: 650 0.68rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.totals b {
+  color: currentColor;
+  font-size: 0.82rem;
+}
+.segments {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 4px;
+  margin: 0.85rem 0 0.7rem;
+}
+.segments i {
+  height: 13px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  transform-origin: center;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+  border-radius: 2px;
+}
+.segments i.filled {
+  border-color: var(--engagement-accent, #d3f36b);
+  background: var(--engagement-accent, #d3f36b);
+  transform: scaleY(1.18);
+}
+.meter-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  font: 650 0.65rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.meter-foot output {
+  color: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+.status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+button {
+  position: relative;
+  width: 100%;
+  min-height: 54px;
+  border: 1px solid var(--engagement-accent, #d3f36b);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--engagement-accent, #d3f36b);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  font: 800 0.8rem/1 inherit;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+button:hover:not(:disabled) {
+  background: var(--engagement-accent, #d3f36b);
+  color: var(--engagement-button-ink, #10120f);
+}
+button:active:not(:disabled),
+button.pressed:not(:disabled) {
+  transform: scale(0.97);
+}
+button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--engagement-accent, #d3f36b) 48%, white);
+  outline-offset: 4px;
+}
+button:disabled {
+  cursor: default;
+  background: color-mix(in srgb, var(--engagement-accent, #d3f36b) 14%, transparent);
+  opacity: 0.75;
+}
+button svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+}
+button [data-button-label] {
+  white-space: nowrap;
+}
+.percent {
+  font: 800 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.privacy {
+  position: absolute;
+  right: 1.35rem;
+  bottom: -1.55rem;
+  color: color-mix(in srgb, currentColor 54%, transparent);
+  font-size: 0.68rem;
+  text-underline-offset: 3px;
+  text-decoration: none;
+}
+.privacy:hover {
+  color: var(--engagement-accent, #d3f36b);
+  text-decoration: underline;
+}
+:host([compact]) {
+  margin: 0 auto 1.2vh;
+  padding: 0;
+  max-width: 1400px;
+}
+:host([compact]) .signal {
+  grid-template-columns: 120px 1fr 145px;
+  padding: 0.7rem 1rem;
+  gap: 1rem;
+}
+:host([compact]) .visitor-line strong {
+  font-size: 1.35rem;
+}
+:host([compact]) .segments {
+  margin: 0.55rem 0;
+}
+:host([compact]) .segments i {
+  height: 9px;
+}
+:host([compact]) button {
+  min-height: 43px;
+}
+:host([compact]) .privacy {
+  display: none;
+}
+@media (max-width: 720px) {
+  .signal, :host([compact]) .signal {
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .meter {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .action {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .visitor {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .segments {
+    gap: 3px;
+  }
+  .segments i {
+    height: 10px;
+  }
+  .status {
+    max-width: 220px;
+  }
+  .privacy {
+    right: 1rem;
+  }
+  :host([compact]) .eyebrow {
+    display: none;
+  }
+  :host([compact]) .meter {
+    grid-column: 1/-1;
+  }
+  :host([compact]) .visitor-line strong {
+    font-size: 1.2rem;
+  }
+}
+@media (max-width: 420px) {
+  button {
+    width: 140px;
+    gap: 0.55rem;
+    padding: 0.7rem 0.75rem;
+  }
+  .status {
+    max-width: 165px;
+  }
+  .meter-head {
+    align-items: center;
+  }
+  .totals {
+    font-size: 0.6rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
