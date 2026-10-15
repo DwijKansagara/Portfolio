@@ -43,7 +43,7 @@ export { ProjectVisual } from "./ProjectVisual";
 const email = "work.dwijkansagara@gmail.com";
 const nav = [
   ["projects", "Categories"],
-  ["skills", "Courses"],
+  ["skills", "Skills"],
   ["playground", "Goodies"],
   ["about", "About"],
 ] as const;
@@ -323,15 +323,21 @@ function App() {
         setMenu(false);
         setOpenNav(null);
       }
-      const target = event.target as HTMLElement;
+      const target = event.target;
       const soundIndex = ["d", "w", "i", "j"].indexOf(
         event.key.toLowerCase(),
       );
       if (
         soundIndex >= 0 &&
-        !["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !event.repeat &&
+        !event.isComposing &&
+        !(target instanceof HTMLElement &&
+          (target.isContentEditable || target.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")))
       ) {
-        playKeySound(soundIndex);
+        void playKeySound(soundIndex);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -350,7 +356,9 @@ function App() {
       document.removeEventListener("keydown", onKey);
       observer.disconnect();
       clearTimeout(copyTimer.current);
-      void audioContext.current?.close();
+      if (audioContext.current?.state !== "closed") {
+        void audioContext.current?.close().catch(() => {});
+      }
     };
   }, []);
   useEffect(() => {
@@ -385,7 +393,7 @@ function App() {
       return;
     }
     const responses: Record<string, string> = {
-      help: "Available commands: about · projects · skills · contact · theme · clear",
+      help: "Available commands: help · about · projects · skills · contact · resume · github · theme · hello · whoami · clear",
       about:
         "Dwij Kansagara is a student developer in Rajkot, India. He builds web interfaces, local AI tools, and robotics projects.",
       projects: projects
@@ -393,6 +401,8 @@ function App() {
         .join("\n\n"),
       skills: skills.join(" / "),
       contact: email + "\ngithub.com/DwijKansagara",
+      github: "Source repositories: https://github.com/DwijKansagara",
+      resume: `Dwij Kansagara | 10th-standard student developer\nRajkot, Gujarat, India\nSkills: ${skills.join(", ")}\nProjects: ${projects.map((project) => project.title).join(", ")}\nContact: ${email}\nSource: https://github.com/DwijKansagara`,
       theme: "Switching perspective. A fresh coat of pixels.",
       hello: "Hey! Happy you’re here. Try projects to see what I’m building.",
       whoami: "A curious visitor. You’re in good company.",
@@ -408,31 +418,43 @@ function App() {
       },
     ]);
   }
-  function playKeySound(index: number) {
+  async function playKeySound(index: number) {
     if (!soundEnabledRef.current) return;
     const AudioContextClass = window.AudioContext;
-    const context = audioContext.current ?? new AudioContextClass();
-    audioContext.current = context;
-    if (context.state === "suspended") void context.resume();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const frequencies = [293.66, 349.23, 440, 587.33];
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(
-      frequencies[index],
-      context.currentTime,
-    );
-    oscillator.frequency.exponentialRampToValueAtTime(
-      frequencies[index] * 0.92,
-      context.currentTime + 0.12,
-    );
-    gain.gain.setValueAtTime(0.0001, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.13, context.currentTime + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.18);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.2);
+    if (typeof AudioContextClass !== "function") return;
+    try {
+      const context = audioContext.current?.state !== "closed" && audioContext.current
+        ? audioContext.current
+        : new AudioContextClass();
+      audioContext.current = context;
+      if (context.state === "suspended") await context.resume();
+      if (context.state === "closed" || !soundEnabledRef.current) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const frequencies = [293.66, 349.23, 440, 587.33];
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(
+        frequencies[index],
+        context.currentTime,
+      );
+      oscillator.frequency.exponentialRampToValueAtTime(
+        frequencies[index] * 0.92,
+        context.currentTime + 0.12,
+      );
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.13, context.currentTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.18);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gain.disconnect();
+      };
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.2);
+    } catch {
+      // Optional sound must never interrupt navigation or form input.
+    }
   }
   function calculateDistance() {
     if (!("geolocation" in navigator)) {
@@ -501,6 +523,8 @@ function App() {
                   if (window.innerWidth <= 800) go(id);
                 }}
                 aria-current={active === id ? "location" : undefined}
+                aria-expanded={openNav === id}
+                aria-controls={openNav === id ? "navigation-panel" : undefined}
               >
                 {label}
               </button>
@@ -509,9 +533,10 @@ function App() {
           {openNav && (
             <motion.div
               className="nav-mega"
+              id="navigation-panel"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              role="dialog"
+              role="region"
               aria-label={`${nav.find(([id]) => id === openNav)?.[1] ?? "Menu"} menu`}
             >
               {openNav === "projects" && (
@@ -632,7 +657,7 @@ function App() {
                 <i className="status-dot" /> CURIOUS MIND. ALWAYS BUILDING.
               </span>
               <span>
-                INDIA <span className="muted">/</span> {time || "IST"} IST
+                INDIA <span className="muted">/</span> {time ? `${time} IST` : "IST"}
               </span>
             </div>
             <div className="hero-layout">
@@ -741,7 +766,7 @@ function App() {
             </div>
             <div className="bento-card bento-height">
               <UserRound size={18} />
-              <strong>6 ft 0.5 in</strong>
+              <strong>184 cm</strong>
               <small>Still growing in code.</small>
             </div>
             <div className="bento-card bento-photo">
@@ -756,7 +781,7 @@ function App() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => playKeySound(index)}
+                      onClick={() => void playKeySound(index)}
                     aria-label={`Play ${key} note`}
                   >
                     {key}
@@ -849,7 +874,7 @@ function App() {
                       onClick={() => setFilter(item)}
                     >
                       {item}
-                      {item === "All work" && <span>03</span>}
+                        {item === "All work" && <span>{String(projects.length).padStart(2, "0")}</span>}
                     </button>
                   ),
                 )}
