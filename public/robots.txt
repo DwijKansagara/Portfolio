@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dwij-portfolio.antideploy.app/sitemap.xml
+Sitemap: https://portfolio-dwij.antideploy.app/sitemap.xml

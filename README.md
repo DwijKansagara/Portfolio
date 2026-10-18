@@ -8,7 +8,7 @@
 
 A React 19 + TypeScript portfolio built with Vite and Framer Motion. It presents Dwij's documented projects, repository links, contact details, and an optional on-device assistant.
 
-**[Open the live portfolio](https://dwij-portfolio.antideploy.app)** · **[Read about Dwij](https://about-me.antideploy.com)** · **[Report a problem](https://github.com/DwijKansagara/Portfolio/issues/new/choose)**
+**[Open the live portfolio](https://portfolio-dwij.antideploy.app)** · **[Read about Dwij](https://about-me.antideploy.com)** · **[Report a problem](https://github.com/DwijKansagara/Portfolio/issues/new/choose)**
 
 ![Live portfolio preview](docs/social-preview.png)
 
@@ -28,7 +28,7 @@ npm run build
 npm run preview
 ```
 
-The production site is published at `https://dwij-portfolio.antideploy.app`. Deploy the generated `dist/` directory at the domain root; the canonical metadata uses that production address.
+The production site is published at `https://portfolio-dwij.antideploy.app`. Deploy the generated `dist/` directory at the domain root; the canonical metadata uses that production address.
 
 ## Visual direction
 

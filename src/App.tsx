@@ -41,6 +41,14 @@ import "./App.css";
 
 export { ProjectVisual } from "./ProjectVisual";
 const email = "work.dwijkansagara@gmail.com";
+const visualForRepo = (name: string) => {
+  const key = name.toLowerCase();
+  if (key.includes("karbs")) return "karbs";
+  if (key.includes("lumina")) return "lumina";
+  if (key.includes("jarvis")) return "jarvis";
+  if (key.includes("avenger") || key.includes("doomsday")) return "avengers";
+  return "github";
+};
 const nav = [
   ["projects", "Categories"],
   ["skills", "Skills"],
@@ -242,6 +250,7 @@ function DwijMascot() {
 }
 
 function App() {
+  const [repoProjects, setRepoProjects] = useState(projects);
   const [light, setLight] = useState(() => {
     try {
       return localStorage.getItem("theme") === "light";
@@ -268,6 +277,21 @@ function App() {
     },
   ]);
   const [time, setTime] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("https://api.github.com/users/DwijKansagara/repos?per_page=100&sort=updated", {
+      headers: { Accept: "application/vnd.github+json" }, signal: controller.signal,
+    }).then((response) => response.ok ? response.json() : []).then((repos: Array<{name:string;html_url:string;description:string|null;language:string|null}>) => {
+      if (!Array.isArray(repos)) return;
+      const curated = new Map(repoProjects.map((item) => [item.link.toLowerCase(), item]));
+      const live = repos.filter((repo) => !repo.name.startsWith(".")) .map((repo, index) => {
+        const existing = curated.get(repo.html_url.toLowerCase());
+        return { ...(existing ?? { number: String(index + 1).padStart(2, "0"), tags: [repo.language ?? "Open source"], visual: visualForRepo(repo.name) }), title: repo.name, link: repo.html_url, description: repo.description || "A public project by Dwij Kansagara.", category: existing?.category ?? `GITHUB • ${repo.language?.toUpperCase() ?? "PROJECT"}` };
+      });
+      if (live.length) setRepoProjects(live);
+    }).catch(() => undefined);
+    return () => controller.abort();
+  }, []);
   const palette = useRef<HTMLDialogElement>(null);
   const terminalBody = useRef<HTMLDivElement>(null);
   const journeyRef = useRef<HTMLElement>(null);
@@ -393,18 +417,18 @@ function App() {
       return;
     }
     const responses: Record<string, string> = {
-      help: "Available commands: help · about · projects · skills · contact · resume · github · theme · hello · whoami · clear",
+      help: "Available commands: help · about · repoProjects · skills · contact · resume · github · theme · hello · whoami · clear",
       about:
-        "Dwij Kansagara is a student developer in Rajkot, India. He builds web interfaces, local AI tools, and robotics projects.",
-      projects: projects
+        "Dwij Kansagara is a student developer in Rajkot, India. He builds web interfaces, local AI tools, and robotics repoProjects.",
+      repoProjects: repoProjects
         .map((p) => p.title + ": " + p.description)
         .join("\n\n"),
       skills: skills.join(" / "),
       contact: email + "\ngithub.com/DwijKansagara",
       github: "Source repositories: https://github.com/DwijKansagara",
-      resume: `Dwij Kansagara | 10th-standard student developer\nRajkot, Gujarat, India\nSkills: ${skills.join(", ")}\nProjects: ${projects.map((project) => project.title).join(", ")}\nContact: ${email}\nSource: https://github.com/DwijKansagara`,
+      resume: `Dwij Kansagara | 10th-standard student developer\nRajkot, Gujarat, India\nSkills: ${skills.join(", ")}\nProjects: ${repoProjects.map((project) => project.title).join(", ")}\nContact: ${email}\nSource: https://github.com/DwijKansagara`,
       theme: "Switching perspective. A fresh coat of pixels.",
-      hello: "Hey! Happy you’re here. Try projects to see what I’m building.",
+      hello: "Hey! Happy you’re here. Try repoProjects to see what I’m building.",
       whoami: "A curious visitor. You’re in good company.",
     };
     if (cmd === "theme") setLight((value) => !value);
@@ -482,7 +506,7 @@ function App() {
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
     );
   }
-  const visibleProjects = projects.filter(
+  const visibleProjects = repoProjects.filter(
     (project) =>
       filter === "All work" ||
       (filter === "AI & interaction"
@@ -539,17 +563,17 @@ function App() {
               role="region"
               aria-label={`${nav.find(([id]) => id === openNav)?.[1] ?? "Menu"} menu`}
             >
-              {openNav === "projects" && (
+              {openNav === "repoProjects" && (
                 <>
                   <span className="mono">BROWSE THE WORK</span>
-                  <button onClick={() => go("projects")}>
+                  <button onClick={() => go("repoProjects")}>
                     <b>AI & interaction</b>
                     <small>
                       Voice, gesture, and intelligent systems{" "}
                       <ArrowUpRight size={14} />
                     </small>
                   </button>
-                  <button onClick={() => go("projects")}>
+                  <button onClick={() => go("repoProjects")}>
                     <b>Creative web</b>
                     <small>
                       Cinematic interfaces and experiments{" "}
@@ -679,12 +703,12 @@ function App() {
                 </motion.h1>
                 <p className="hero-description">
                   Selected React, Python, TensorFlow, voice-interface, and
-                  physical-computing projects. Each project links to its source
+                  physical-computing repoProjects. Each project links to its source
                   repository.
                 </p>
                 <div className="hero-buttons">
-                  <a className="button primary" href="#projects">
-                    View projects <ArrowDown size={17} />
+                  <a className="button primary" href="#repoProjects">
+                    View repoProjects <ArrowDown size={17} />
                   </a>
                   <a className="text-link" href="#about">
                     About Dwij <ArrowUpRight size={17} />
@@ -714,8 +738,8 @@ function App() {
             </div>
             <div className="hero-footer mono">
               <span>STUDENT DEVELOPER IN RAJKOT, INDIA.</span>
-              <a href="#projects">
-                VIEW SELECTED PROJECTS <ArrowDown size={15} />
+              <a href="#repoProjects">
+                VIEW SELECTED repoProjects <ArrowDown size={15} />
               </a>
               <span>REACT / PYTHON / AI / ROBOTICS</span>
             </div>
@@ -842,7 +866,7 @@ function App() {
               </div>
             </div>
           </div>
-          <section id="projects" className="section wrap">
+          <section id="repoProjects" className="section wrap">
             <Reveal>
               <div className="section-label mono">
                 <span>01 / SELECTED WORK</span>
@@ -850,7 +874,7 @@ function App() {
               </div>
               <div className="section-heading">
                 <h2>
-                  Selected projects
+                  Selected repoProjects
                   <br />
                   with <span className="serif">source code.</span>
                 </h2>
@@ -864,7 +888,7 @@ function App() {
               <div
                 className="filters"
                 role="group"
-                aria-label="Filter projects"
+                aria-label="Filter repoProjects"
               >
                 {["All work", "AI & interaction", "Creative web"].map(
                   (item) => (
@@ -874,16 +898,16 @@ function App() {
                       onClick={() => setFilter(item)}
                     >
                       {item}
-                        {item === "All work" && <span>{String(projects.length).padStart(2, "0")}</span>}
+                        {item === "All work" && <span>{String(repoProjects.length).padStart(2, "0")}</span>}
                     </button>
                   ),
                 )}
               </div>
               <span className="mono result-count" aria-live="polite">
-                {String(visibleProjects.length).padStart(2, "0")} PROJECTS
+                {String(visibleProjects.length).padStart(2, "0")} repoProjects
               </span>
             </div>
-            <div className="projects-grid">
+            <div className="repoProjects-grid">
               {visibleProjects.map((project) => (
                 <motion.article
                   layout={!reduced}
@@ -971,7 +995,7 @@ function App() {
               <Reveal className="about-copy">
                 <p className="large-copy">
                   I’m Dwij, a student developer based in Rajkot, Gujarat. I
-                  learn software by building working projects and publishing
+                  learn software by building working repoProjects and publishing
                   their source code.
                 </p>
                 <p>
@@ -980,7 +1004,7 @@ function App() {
                   robotics.
                 </p>
                 <p>
-                  This portfolio describes projects I can support with public
+                  This portfolio describes repoProjects I can support with public
                   repositories. It does not claim employment, client results,
                   certifications, or commercial metrics.
                 </p>
@@ -998,7 +1022,7 @@ function App() {
               <span className="mono section-label">ABOUT THIS PORTFOLIO</span>
               <h2 id="faq-title">Frequently asked questions</h2>
               <div className="portfolio-faq-grid">
-                <article><h3>Who is Dwij Kansagara?</h3><p>Dwij is a 10th-standard student developer in Rajkot who builds web interfaces, browser machine-learning experiments, voice tools, and robotics projects.</p></article>
+                <article><h3>Who is Dwij Kansagara?</h3><p>Dwij is a 10th-standard student developer in Rajkot who builds web interfaces, browser machine-learning experiments, voice tools, and robotics repoProjects.</p></article>
                 <article><h3>Can I view the source code?</h3><p>Yes. Every selected project links to a public GitHub repository with source code and documentation.</p></article>
                 <article><h3>How can I contact Dwij?</h3><p>Use the email link in the contact section or visit the public GitHub profile.</p></article>
               </div>
@@ -1014,7 +1038,7 @@ function App() {
                 <h2>
                   Tools I use
                   <br />
-                  <span className="serif">for current projects.</span>
+                  <span className="serif">for current repoProjects.</span>
                 </h2>
                 <p>
                   Technologies shown here also appear in the linked project
@@ -1076,7 +1100,7 @@ function App() {
                 cannot execute system code.
               </p>
               <div className="terminal-shortcuts">
-                {["about", "projects", "skills", "help"].map((cmd) => (
+                {["about", "repoProjects", "skills", "help"].map((cmd) => (
                   <button key={cmd} onClick={() => runCommand(cmd)}>
                     {cmd}
                     <ArrowUpRight size={13} />
@@ -1146,7 +1170,7 @@ function App() {
                   <span className="serif">learning software.</span>
                 </h2>
                 <p className="journey-intro">
-                  A short record of the skills represented by the projects on
+                  A short record of the skills represented by the repoProjects on
                   this page.
                 </p>
               </Reveal>
@@ -1165,7 +1189,7 @@ function App() {
                   {
                     label: "THE EXPLORATION",
                     title: "Making things respond.",
-                    text: "Bringing interfaces, music, and voice together through projects like LUMINA AI and J.A.R.V.I.S.",
+                    text: "Bringing interfaces, music, and voice together through repoProjects like LUMINA AI and J.A.R.V.I.S.",
                   },
                   {
                     label: "RIGHT NOW",
@@ -1225,7 +1249,7 @@ function App() {
               <ArrowUpRight size={20} />
             </motion.a>
             <div className="repo-grid">
-              {projects.map((project, index) => (
+              {repoProjects.map((project, index) => (
                 <motion.a
                   className="repo-card"
                   key={project.title}
